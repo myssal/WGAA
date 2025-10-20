@@ -27,26 +27,22 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
     header.innerHTML = `<span class="font-semibold">${title}</span><span class="transition-transform duration-200" data-arrow>▼</span>`;
 
     const content = document.createElement("div");
-    content.className = "overflow-hidden transition-all duration-300 max-h-full";
+    content.className = "overflow-hidden transition-all duration-300";
 
     let expanded = false; // initially collapsed
     const arrow = header.querySelector("[data-arrow]");
     const setExpanded = (state) => {
       expanded = state;
       if (expanded) {
-        content.style.maxHeight = content.scrollHeight + "px";
+        content.style.display = "block"; // show content
         arrow.style.transform = "rotate(180deg)";
       } else {
-        content.style.maxHeight = "0px";
+        content.style.display = "none"; // hide content
         arrow.style.transform = "rotate(0deg)";
-
-        // Collapse all nested collapsibles inside this content
-        const nestedContents = content.querySelectorAll("div.overflow-hidden");
-        nestedContents.forEach(nc => nc.style.maxHeight = "0px");
       }
     };
 
-    // Apply initial collapsed state
+    // initially collapsed
     setExpanded(expanded);
 
     header.addEventListener("click", () => setExpanded(!expanded));
@@ -69,8 +65,7 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
       groupHeader.textContent = group.Name;
 
       const cgListDiv = document.createElement("div");
-      cgListDiv.className = "pl-4 overflow-hidden transition-all duration-300";
-      cgListDiv.style.maxHeight = "none";
+      cgListDiv.className = "pl-4";
 
       const groupDetails = cgDetails.filter(d => d.GroupId === group.Id).sort((a, b) => a.Order - b.Order);
       const filteredDetails = query ? groupDetails.filter(d => d.Name.toLowerCase().includes(query)) : groupDetails;
@@ -83,11 +78,20 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
         cgListDiv.appendChild(btn);
       });
 
+      let groupExpanded = false;
+      const toggleGroup = () => {
+        groupExpanded = !groupExpanded;
+        cgListDiv.style.display = groupExpanded ? "block" : "none";
+      };
+      groupHeader.addEventListener("click", toggleGroup);
+
+      // initially collapsed
+      cgListDiv.style.display = "none";
+
       groupDiv.appendChild(groupHeader);
       groupDiv.appendChild(cgListDiv);
       cgSection.content.appendChild(groupDiv);
     });
-
   container.appendChild(cgSection.div);
 
   /** Render Manga Section */
@@ -103,8 +107,7 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
       groupHeader.textContent = group.Name;
 
       const chapterListDiv = document.createElement("div");
-      chapterListDiv.className = "pl-4 overflow-hidden transition-all duration-300";
-      chapterListDiv.style.maxHeight = "none";
+      chapterListDiv.className = "pl-4";
 
       const chapters = mangaChapters.filter(c => c.GroupId === group.Id).sort((a, b) => a.Order - b.Order);
 
@@ -117,8 +120,7 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
         chapterHeader.textContent = chapter.Name;
 
         const detailListDiv = document.createElement("div");
-        detailListDiv.className = "pl-4 overflow-hidden transition-all duration-300";
-        detailListDiv.style.maxHeight = "none";
+        detailListDiv.className = "pl-4";
 
         const detailsList = mangaDetails.filter(d => d.ChapterId === chapter.Id);
         detailsList.forEach(detail => {
@@ -129,10 +131,30 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
           detailListDiv.appendChild(btn);
         });
 
+        let chapterExpanded = false;
+        const toggleChapter = () => {
+          chapterExpanded = !chapterExpanded;
+          detailListDiv.style.display = chapterExpanded ? "block" : "none";
+        };
+        chapterHeader.addEventListener("click", toggleChapter);
+
+        // initially collapsed
+        detailListDiv.style.display = "none";
+
         chapterDiv.appendChild(chapterHeader);
         chapterDiv.appendChild(detailListDiv);
         chapterListDiv.appendChild(chapterDiv);
       });
+
+      let groupExpanded = false;
+      const toggleGroup = () => {
+        groupExpanded = !groupExpanded;
+        chapterListDiv.style.display = groupExpanded ? "block" : "none";
+      };
+      groupHeader.addEventListener("click", toggleGroup);
+
+      // initially collapsed
+      chapterListDiv.style.display = "none";
 
       groupDiv.appendChild(groupHeader);
       groupDiv.appendChild(chapterListDiv);
