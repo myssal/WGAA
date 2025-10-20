@@ -111,32 +111,41 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
 
       const chapters = mangaChapters.filter(c => c.GroupId === group.Id).sort((a, b) => a.Order - b.Order);
 
-      chapters.forEach(chapter => {
+      chapters.forEach((chapter, chapterIndex) => {
         const chapterDiv = document.createElement("div");
         chapterDiv.className = "pl-2 mb-1";
 
         const chapterHeader = document.createElement("button");
         chapterHeader.className = "w-full text-left px-3 py-1 rounded hover:bg-gray-700 transition text-sm font-semibold";
-        chapterHeader.textContent = chapter.Name;
 
+        // Get chapter own CG if exists (some chapters have Bg)
+        chapterHeader.textContent = chapter.Name;
+        
         const detailListDiv = document.createElement("div");
         detailListDiv.className = "pl-4";
 
         const detailsList = mangaDetails.filter(d => d.ChapterId === chapter.Id);
-        detailsList.forEach(detail => {
+
+        detailsList.forEach((detail, index) => {
           const btn = document.createElement("button");
           btn.className = "block w-full text-left px-3 py-1 rounded hover:bg-gray-700 transition text-sm";
-          btn.textContent = `CG ${detail.Id}`;
+          // Show parent's name + order instead of undefined
+          btn.textContent = `${chapter.Name} ${index + 1}`;
           btn.onclick = () => showCG(detail);
           detailListDiv.appendChild(btn);
         });
 
+        // Toggle chapter expand/collapse and show first CG if clicked
         let chapterExpanded = false;
-        const toggleChapter = () => {
+        chapterHeader.addEventListener("click", () => {
           chapterExpanded = !chapterExpanded;
           detailListDiv.style.display = chapterExpanded ? "block" : "none";
-        };
-        chapterHeader.addEventListener("click", toggleChapter);
+
+          // Show first CG when expanding
+          if (chapterExpanded && detailsList.length > 0) {
+            showCG(detailsList[0]);
+          }
+        });
 
         // initially collapsed
         detailListDiv.style.display = "none";
@@ -145,7 +154,7 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
         chapterDiv.appendChild(detailListDiv);
         chapterListDiv.appendChild(chapterDiv);
       });
-
+      
       let groupExpanded = false;
       const toggleGroup = () => {
         groupExpanded = !groupExpanded;
