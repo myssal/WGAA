@@ -19,7 +19,8 @@ async function loadConfigs(region) {
     groups = await groupRes.json();
     details = await detailRes.json();
 
-    renderSidebar();
+    // Pass updated arrays
+    renderSidebar(groups, details);
   } catch (err) {
     console.error("❌ Failed to load config:", err);
     document.getElementById("mainContent").innerHTML =
@@ -33,35 +34,8 @@ document.getElementById("regionSelect").addEventListener("change", e => {
 });
 
 document.getElementById("globalSearch").addEventListener("input", () => {
-  renderSidebar();
+  renderSidebar(groups, details);
 });
 
 /** Initialize */
 loadConfigs(currentRegion);
-
-// Sidebar resizing with grab handle
-const sidebarContainer = document.getElementById("sidebarContainer");
-const sidebarHandle = document.getElementById("sidebarHandle");
-
-let isResizing = false;
-
-sidebarHandle.addEventListener("mousedown", e => {
-  isResizing = true;
-  document.body.style.cursor = "ew-resize";
-  e.preventDefault(); // prevent text selection
-});
-
-document.addEventListener("mousemove", e => {
-  if (!isResizing) return;
-  // Calculate new width in percentage
-  let newWidth = (e.clientX / window.innerWidth) * 100;
-  newWidth = Math.max(20, Math.min(25, newWidth)); // clamp 20%-25%
-  sidebarContainer.style.width = `${newWidth}%`;
-});
-
-document.addEventListener("mouseup", () => {
-  if (isResizing) {
-    isResizing = false;
-    document.body.style.cursor = "default";
-  }
-});
