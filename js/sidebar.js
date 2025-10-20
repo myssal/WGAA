@@ -131,7 +131,7 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
           btn.className = "block w-full text-left px-3 py-1 rounded hover:bg-gray-700 transition text-sm";
           // Show parent's name + order instead of undefined
           btn.textContent = `${chapter.Name} ${index + 1}`;
-          btn.onclick = () => showCG(detail);
+          btn.onclick = () => showCG(detail, chapter.Name);
           detailListDiv.appendChild(btn);
         });
 
@@ -143,7 +143,7 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
 
           // Show first CG when expanding
           if (chapterExpanded && detailsList.length > 0) {
-            showCG(detailsList[0]);
+            showCG(detailsList[0], chapter.Name);
           }
         });
 
@@ -154,7 +154,7 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
         chapterDiv.appendChild(detailListDiv);
         chapterListDiv.appendChild(chapterDiv);
       });
-      
+
       let groupExpanded = false;
       const toggleGroup = () => {
         groupExpanded = !groupExpanded;
