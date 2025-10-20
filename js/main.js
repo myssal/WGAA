@@ -2,27 +2,43 @@
 import { DATA_REPO, BRANCH, currentRegion } from "./config.js";
 import { renderSidebar } from "./sidebar.js";
 
-export let groups = [];
-export let details = [];
+export let groups = [];       // CGGroup
+export let details = [];      // CGDetail
+
+export let mangaGroups = [];      // ArchiveComicGroup
+export let mangaChapters = [];    // ArchiveComicChapter
+export let mangaDetails = [];     // ArchiveComicDetail
 
 async function loadConfigs(region) {
-  const baseUrl = `https://cdn.jsdelivr.net/gh/${DATA_REPO}@${BRANCH}/${region}/bytes/share/archive`;
+  const baseShareUrl = `https://cdn.jsdelivr.net/gh/${DATA_REPO}@${BRANCH}/${region}/bytes/share/archive`;
+  const baseClientUrl = `https://cdn.jsdelivr.net/gh/${DATA_REPO}@${BRANCH}/${region}/bytes/client/archive`;
 
   try {
+    // Fetch normal CG
     const [groupRes, detailRes] = await Promise.all([
-      fetch(`${baseUrl}/CGGroup.json`),
-      fetch(`${baseUrl}/CGDetail.json`)
+      fetch(`${baseShareUrl}/CGGroup.json`),
+      fetch(`${baseShareUrl}/CGDetail.json`)
     ]);
-
-    if (!groupRes.ok || !detailRes.ok) throw new Error("Failed to fetch config files");
-
+    if (!groupRes.ok || !detailRes.ok) throw new Error("Failed to fetch CG config files");
     groups = await groupRes.json();
     details = await detailRes.json();
 
-    // Pass updated arrays
-    renderSidebar(groups, details);
+    // Fetch Manga/Comic
+    const [comicGroupRes, comicChapterRes, comicDetailRes] = await Promise.all([
+      fetch(`${baseShareUrl}/ArchiveComicGroup.json`),
+      fetch(`${baseShareUrl}/ArchiveComicChapter.json`),
+      fetch(`${baseClientUrl}/ArchiveComicDetail.json`)
+    ]);
+    if (!comicGroupRes.ok || !comicChapterRes.ok || !comicDetailRes.ok) throw new Error("Failed to fetch Manga config files");
+    mangaGroups = await comicGroupRes.json();
+    mangaChapters = await comicChapterRes.json();
+    mangaDetails = await comicDetailRes.json();
+
+    // Render sidebar with all data
+    renderSidebar(groups, details, mangaGroups, mangaChapters, mangaDetails);
+
   } catch (err) {
-    console.error("❌ Failed to load config:", err);
+    console.error("Failed to load config:", err);
     document.getElementById("mainContent").innerHTML =
       `<p class="text-red-400 text-center mt-6">Failed to load data for region: ${region}</p>`;
   }
@@ -34,7 +50,7 @@ document.getElementById("regionSelect").addEventListener("change", e => {
 });
 
 document.getElementById("globalSearch").addEventListener("input", () => {
-  renderSidebar(groups, details);
+  renderSidebar(groups, details, mangaGroups, mangaChapters, mangaDetails);
 });
 
 /** Initialize */
