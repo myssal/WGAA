@@ -1,14 +1,6 @@
 // sidebar.js
-import { showCG } from "./viewer.js";
+import { showCG, showCGGrid } from "./viewer.js";
 
-/**
- * Render sidebar with CG and Manga
- * @param {Array} cgGroups - CGGroup
- * @param {Array} cgDetails - CGDetail
- * @param {Array} mangaGroups - ArchiveComicGroup
- * @param {Array} mangaChapters - ArchiveComicChapter
- * @param {Array} mangaDetails - ArchiveComicDetail
- */
 export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, mangaDetails) {
   const container = document.getElementById("categoryList");
   container.innerHTML = "";
@@ -16,7 +8,6 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
 
   const query = document.getElementById("globalSearch")?.value.trim().toLowerCase() || "";
 
-  /** Helper to create collapsible container */
   const createCollapsible = (title) => {
     const div = document.createElement("div");
     div.className = "group-item border-b border-gray-700 pb-2";
@@ -29,22 +20,20 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
     const content = document.createElement("div");
     content.className = "overflow-hidden transition-all duration-300";
 
-    let expanded = false; // initially collapsed
+    let expanded = false;
     const arrow = header.querySelector("[data-arrow]");
     const setExpanded = (state) => {
       expanded = state;
       if (expanded) {
-        content.style.display = "block"; // show content
+        content.style.display = "block";
         arrow.style.transform = "rotate(180deg)";
       } else {
-        content.style.display = "none"; // hide content
+        content.style.display = "none";
         arrow.style.transform = "rotate(0deg)";
       }
     };
 
-    // initially collapsed
     setExpanded(expanded);
-
     header.addEventListener("click", () => setExpanded(!expanded));
     div.appendChild(header);
     div.appendChild(content);
@@ -52,123 +41,107 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
     return { div, content, setExpanded };
   };
 
-  /** Render CG Section */
+  /** CG Section */
   const cgSection = createCollapsible("CG");
-  cgGroups
-    .sort((a, b) => a.Order - b.Order)
-    .forEach(group => {
-      const groupDiv = document.createElement("div");
-      groupDiv.className = "pl-2 mb-1";
+  cgGroups.sort((a,b)=>a.Order-b.Order).forEach(group => {
+    const groupDiv = document.createElement("div");
+    groupDiv.className = "pl-2 mb-1";
 
-      const groupHeader = document.createElement("button");
-      groupHeader.className = "w-full text-left px-3 py-1 rounded hover:bg-gray-700 transition text-sm font-semibold";
-      groupHeader.textContent = group.Name;
+    const groupHeader = document.createElement("button");
+    groupHeader.className = "w-full text-left px-3 py-1 rounded hover:bg-gray-700 transition text-sm font-semibold";
+    groupHeader.textContent = group.Name;
 
-      const cgListDiv = document.createElement("div");
-      cgListDiv.className = "pl-4";
+    const cgListDiv = document.createElement("div");
+    cgListDiv.className = "pl-4";
 
-      const groupDetails = cgDetails.filter(d => d.GroupId === group.Id).sort((a, b) => a.Order - b.Order);
-      const filteredDetails = query ? groupDetails.filter(d => d.Name.toLowerCase().includes(query)) : groupDetails;
+    const groupDetails = cgDetails.filter(d => d.GroupId === group.Id).sort((a,b)=>a.Order-b.Order);
+    const filteredDetails = query ? groupDetails.filter(d=>d.Name.toLowerCase().includes(query)) : groupDetails;
 
-      filteredDetails.forEach(cg => {
-        const btn = document.createElement("button");
-        btn.className = "block w-full text-left px-3 py-1 rounded hover:bg-gray-700 transition text-sm";
-        btn.textContent = cg.Name;
-        btn.onclick = () => showCG(cg);
-        cgListDiv.appendChild(btn);
-      });
-
-      let groupExpanded = false;
-      const toggleGroup = () => {
-        groupExpanded = !groupExpanded;
-        cgListDiv.style.display = groupExpanded ? "block" : "none";
-      };
-      groupHeader.addEventListener("click", toggleGroup);
-
-      // initially collapsed
-      cgListDiv.style.display = "none";
-
-      groupDiv.appendChild(groupHeader);
-      groupDiv.appendChild(cgListDiv);
-      cgSection.content.appendChild(groupDiv);
+    filteredDetails.forEach(cg=>{
+      const btn = document.createElement("button");
+      btn.className="block w-full text-left px-3 py-1 rounded hover:bg-gray-700 transition text-sm";
+      btn.textContent=cg.Name;
+      btn.onclick=()=> showCG(cg, group.Name, filteredDetails);
+      cgListDiv.appendChild(btn);
     });
+
+    let groupExpanded = false;
+    groupHeader.addEventListener("click", () => {
+      groupExpanded = !groupExpanded;
+      cgListDiv.style.display = groupExpanded ? "block" : "none";
+      if (groupExpanded && filteredDetails.length>0) {
+        showCGGrid(filteredDetails, group.Name);
+      }
+    });
+
+    cgListDiv.style.display="none";
+    groupDiv.appendChild(groupHeader);
+    groupDiv.appendChild(cgListDiv);
+    cgSection.content.appendChild(groupDiv);
+  });
   container.appendChild(cgSection.div);
 
-  /** Render Manga Section */
+  /** Manga Section */
   const mangaSection = createCollapsible("Manga");
-  mangaGroups
-    .sort((a, b) => a.Order - b.Order)
-    .forEach(group => {
-      const groupDiv = document.createElement("div");
-      groupDiv.className = "pl-2 mb-1";
+  mangaGroups.sort((a,b)=>a.Order-b.Order).forEach(group=>{
+    const groupDiv=document.createElement("div");
+    groupDiv.className="pl-2 mb-1";
 
-      const groupHeader = document.createElement("button");
-      groupHeader.className = "w-full text-left px-3 py-1 rounded hover:bg-gray-700 transition text-sm font-semibold";
-      groupHeader.textContent = group.Name;
+    const groupHeader=document.createElement("button");
+    groupHeader.className="w-full text-left px-3 py-1 rounded hover:bg-gray-700 transition text-sm font-semibold";
+    groupHeader.textContent=group.Name;
 
-      const chapterListDiv = document.createElement("div");
-      chapterListDiv.className = "pl-4";
+    const chapterListDiv=document.createElement("div");
+    chapterListDiv.className="pl-4";
 
-      const chapters = mangaChapters.filter(c => c.GroupId === group.Id).sort((a, b) => a.Order - b.Order);
+    const chapters = mangaChapters.filter(c=>c.GroupId===group.Id).sort((a,b)=>a.Order-b.Order);
+    chapters.forEach(chapter=>{
+      const chapterDiv=document.createElement("div");
+      chapterDiv.className="pl-2 mb-1";
 
-      chapters.forEach((chapter, chapterIndex) => {
-        const chapterDiv = document.createElement("div");
-        chapterDiv.className = "pl-2 mb-1";
+      const chapterHeader=document.createElement("button");
+      chapterHeader.className="w-full text-left px-3 py-1 rounded hover:bg-gray-700 transition text-sm font-semibold";
+      chapterHeader.textContent=chapter.Name;
 
-        const chapterHeader = document.createElement("button");
-        chapterHeader.className = "w-full text-left px-3 py-1 rounded hover:bg-gray-700 transition text-sm font-semibold";
+      const detailListDiv=document.createElement("div");
+      detailListDiv.className="pl-4";
 
-        // Get chapter own CG if exists (some chapters have Bg)
-        chapterHeader.textContent = chapter.Name;
-        
-        const detailListDiv = document.createElement("div");
-        detailListDiv.className = "pl-4";
+      const detailsList = mangaDetails.filter(d=>d.ChapterId===chapter.Id);
 
-        const detailsList = mangaDetails.filter(d => d.ChapterId === chapter.Id);
-
-        detailsList.forEach((detail, index) => {
-          const btn = document.createElement("button");
-          btn.className = "block w-full text-left px-3 py-1 rounded hover:bg-gray-700 transition text-sm";
-          // Show parent's name + order instead of undefined
-          btn.textContent = `${chapter.Name} ${index + 1}`;
-          btn.onclick = () => showCG(detail, chapter.Name);
-          detailListDiv.appendChild(btn);
-        });
-
-        // Toggle chapter expand/collapse and show first CG if clicked
-        let chapterExpanded = false;
-        chapterHeader.addEventListener("click", () => {
-          chapterExpanded = !chapterExpanded;
-          detailListDiv.style.display = chapterExpanded ? "block" : "none";
-
-          // Show first CG when expanding
-          if (chapterExpanded && detailsList.length > 0) {
-            showCG(detailsList[0], chapter.Name);
-          }
-        });
-
-        // initially collapsed
-        detailListDiv.style.display = "none";
-
-        chapterDiv.appendChild(chapterHeader);
-        chapterDiv.appendChild(detailListDiv);
-        chapterListDiv.appendChild(chapterDiv);
+      detailsList.forEach((detail,index)=>{
+        const btn=document.createElement("button");
+        btn.className="block w-full text-left px-3 py-1 rounded hover:bg-gray-700 transition text-sm";
+        btn.textContent=`${chapter.Name} ${index+1}`;
+        btn.onclick=()=>showCG(detail, chapter.Name, detailsList);
+        detailListDiv.appendChild(btn);
       });
 
-      let groupExpanded = false;
-      const toggleGroup = () => {
-        groupExpanded = !groupExpanded;
-        chapterListDiv.style.display = groupExpanded ? "block" : "none";
-      };
-      groupHeader.addEventListener("click", toggleGroup);
+      let chapterExpanded=false;
+      chapterHeader.addEventListener("click", ()=>{
+        chapterExpanded=!chapterExpanded;
+        detailListDiv.style.display = chapterExpanded ? "block" : "none";
+        if (chapterExpanded && detailsList.length>0){
+          showCGGrid(detailsList, chapter.Name);
+        }
+      });
 
-      // initially collapsed
-      chapterListDiv.style.display = "none";
-
-      groupDiv.appendChild(groupHeader);
-      groupDiv.appendChild(chapterListDiv);
-      mangaSection.content.appendChild(groupDiv);
+      detailListDiv.style.display="none";
+      chapterDiv.appendChild(chapterHeader);
+      chapterDiv.appendChild(detailListDiv);
+      chapterListDiv.appendChild(chapterDiv);
     });
+
+    let groupExpanded=false;
+    groupHeader.addEventListener("click",()=>{
+      groupExpanded=!groupExpanded;
+      chapterListDiv.style.display=groupExpanded ? "block":"none";
+    });
+
+    chapterListDiv.style.display="none";
+    groupDiv.appendChild(groupHeader);
+    groupDiv.appendChild(chapterListDiv);
+    mangaSection.content.appendChild(groupDiv);
+  });
 
   container.appendChild(mangaSection.div);
 }
