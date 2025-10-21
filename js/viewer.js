@@ -1,25 +1,18 @@
 // viewer.js
 import { ASSET_REPO, BRANCH } from "./config.js";
 
-/** Universal thumbnail grid renderer */
+/** Thumbnail Grid Renderer */
 export function showThumbnailGrid(cgList, parentName = "", section = "CG") {
   const main = document.getElementById("mainContent");
   main.innerHTML = "";
 
-  // Show path (no Back button at top level)
   if (parentName) {
     const pathDiv = document.createElement("div");
     pathDiv.className = "flex justify-between items-center mb-4";
-
-    const pathSpan = document.createElement("span");
-    pathSpan.textContent = `${section}/${parentName}`;
-    pathSpan.className = "text-gray-200 font-bold";
-
-    pathDiv.appendChild(pathSpan);
+    pathDiv.innerHTML = `<span class="text-gray-200 font-bold">${section}/${parentName}</span>`;
     main.appendChild(pathDiv);
   }
 
-  // Group by ChapterName (for manga) or fallback to "All"
   const grouped = {};
   cgList.forEach(cg => {
     const key = cg.ChapterName || "All";
@@ -28,7 +21,6 @@ export function showThumbnailGrid(cgList, parentName = "", section = "CG") {
   });
 
   Object.keys(grouped).forEach(groupName => {
-    // Chapter header if needed
     if (Object.keys(grouped).length > 1 && groupName !== "All") {
       const title = document.createElement("h3");
       title.textContent = groupName;
@@ -49,7 +41,6 @@ export function showThumbnailGrid(cgList, parentName = "", section = "CG") {
 
       const baseName = filename.replace(/\.(jpg|png|jpeg)$/i, "");
       const thumbUrl = `https://raw.githubusercontent.com/${ASSET_REPO}/${BRANCH}/thumbnails/${dir}/${baseName}_thumb.webp`;
-      const imgUrl = `https://raw.githubusercontent.com/${ASSET_REPO}/${BRANCH}/${dir}/${baseName}.png`;
 
       const wrapper = document.createElement("div");
       wrapper.className = "flex flex-col items-center";
@@ -63,7 +54,6 @@ export function showThumbnailGrid(cgList, parentName = "", section = "CG") {
 
       wrapper.appendChild(img);
 
-      // For non-manga, show name
       if (section !== "Manga") {
         const caption = document.createElement("p");
         caption.textContent = cg.Name || groupName || "Unknown";
@@ -76,7 +66,7 @@ export function showThumbnailGrid(cgList, parentName = "", section = "CG") {
   });
 }
 
-/** Show individual CG */
+/** Show individual CG with navigation */
 export function showCG(cg, parentName = "", parentList = [], section = "CG") {
   const main = document.getElementById("mainContent");
   const categoryPath = parentName ? `${section}/${parentName}` : section;
@@ -89,8 +79,13 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
   const baseName = filename?.replace(/\.(jpg|png|jpeg)$/i, "") || "";
   const imgUrl = filename ? `https://raw.githubusercontent.com/${ASSET_REPO}/${BRANCH}/${dir}/${baseName}.png` : "";
 
+  // Find current CG index
+  const index = parentList.findIndex(item => item.Id === cg.Id);
+  const prev = parentList[index - 1];
+  const next = parentList[index + 1];
+
   main.innerHTML = `
-    <div class="max-w-4xl mx-auto text-center">
+    <div class="max-w-5xl mx-auto text-center relative">
       <div class="flex justify-between items-center mb-4">
         <button id="backBtn" class="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm">← Back</button>
         <span class="text-gray-200 font-bold">${categoryPath}</span>
@@ -98,8 +93,16 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
 
       ${section !== "Manga" ? `<h2 class="text-2xl font-bold mb-4">${cg.Name || parentName || "Unknown"}</h2>` : ""}
 
-      <div class="rounded-lg overflow-hidden shadow-lg bg-gray-800 p-2">
+      <div class="relative rounded-lg overflow-hidden shadow-lg bg-gray-800 p-2">
         <img id="cgImage" src="${imgUrl}" alt="${baseName}" class="w-full object-contain max-h-[70vh] mx-auto cursor-pointer">
+
+        <!-- Navigation arrows -->
+        <button id="prevBtn" ${!prev ? "disabled" : ""} class="absolute left-3 top-1/2 transform -translate-y-1/2 text-3xl text-gray-300 hover:text-white disabled:opacity-30">
+          &#10094;
+        </button>
+        <button id="nextBtn" ${!next ? "disabled" : ""} class="absolute right-3 top-1/2 transform -translate-y-1/2 text-3xl text-gray-300 hover:text-white disabled:opacity-30">
+          &#10095;
+        </button>
       </div>
 
       ${section !== "Manga" ? `<p class="mt-4 text-gray-300">${cg.Desc || ""}</p>` : ""}
@@ -128,10 +131,25 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
     }
   });
 
-  const backBtn = document.getElementById("backBtn");
-  backBtn.addEventListener("click", () => {
-    if (parentList && parentList.length > 0) {
-      showThumbnailGrid(parentList, parentName, section);
-    }
+  // Navigation
+  document.getElementById("backBtn").addEventListener("click", () => {
+    showThumbnailGrid(parentList, parentName, section);
   });
+
+  if (prev) {
+    document.getElementById("prevBtn").addEventListener("click", () => {
+      showCG(prev, parentName, parentList, section);
+    });
+  }
+  if (next) {
+    document.getElementById("nextBtn").addEventListener("click", () => {
+      showCG(next, parentName, parentList, section);
+    });
+  }
+
+  // Keyboard navigation support
+  document.onkeydown = (e) => {
+    if (e.key === "ArrowLeft" && prev) showCG(prev, parentName, parentList, section);
+    if (e.key === "ArrowRight" && next) showCG(next, parentName, parentList, section);
+  };
 }
