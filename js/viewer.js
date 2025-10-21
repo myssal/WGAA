@@ -1,16 +1,16 @@
+// viewer.js
 import { ASSET_REPO, BRANCH } from "./config.js";
 
 /** Universal thumbnail grid renderer */
 export function showThumbnailGrid(cgList, parentName = "", section = "CG") {
   const main = document.getElementById("mainContent");
-  main.innerHTML = ""; // clear
+  main.innerHTML = "";
 
-  // Show category path only when inside a subcategory
+  // Show path (no Back button at top level)
   if (parentName) {
     const pathDiv = document.createElement("div");
     pathDiv.className = "flex justify-between items-center mb-4";
 
-    // Only show "Back" if there’s actually a higher-level view to return to
     const pathSpan = document.createElement("span");
     pathSpan.textContent = `${section}/${parentName}`;
     pathSpan.className = "text-gray-200 font-bold";
@@ -19,16 +19,17 @@ export function showThumbnailGrid(cgList, parentName = "", section = "CG") {
     main.appendChild(pathDiv);
   }
 
-  // Group by parent (optional for Manga chapters)
-  let grouped = {};
+  // Group by ChapterName (for manga) or fallback to "All"
+  const grouped = {};
   cgList.forEach(cg => {
-    const key = cg.ChapterName || parentName || "All";
+    const key = cg.ChapterName || "All";
     if (!grouped[key]) grouped[key] = [];
     grouped[key].push(cg);
   });
 
   Object.keys(grouped).forEach(groupName => {
-    if (groupName !== parentName && groupName !== "All") {
+    // Chapter header if needed
+    if (Object.keys(grouped).length > 1 && groupName !== "All") {
       const title = document.createElement("h3");
       title.textContent = groupName;
       title.className = "text-lg font-bold text-gray-200 mt-4 mb-2";
@@ -50,25 +51,26 @@ export function showThumbnailGrid(cgList, parentName = "", section = "CG") {
       const thumbUrl = `https://raw.githubusercontent.com/${ASSET_REPO}/${BRANCH}/thumbnails/${dir}/${baseName}_thumb.webp`;
       const imgUrl = `https://raw.githubusercontent.com/${ASSET_REPO}/${BRANCH}/${dir}/${baseName}.png`;
 
-      const cgDisplayName = cg.Name || groupName || "Unknown";
-
       const wrapper = document.createElement("div");
       wrapper.className = "flex flex-col items-center";
 
       const img = document.createElement("img");
       img.src = thumbUrl;
-      img.alt = cgDisplayName;
-      img.title = cgDisplayName;
+      img.alt = baseName;
       img.className = "w-full h-40 object-cover rounded cursor-pointer hover:scale-105 transition";
       img.loading = "lazy";
-      img.onclick = () => showCG(cg, groupName, cgList, section);
-
-      const caption = document.createElement("p");
-      caption.textContent = cgDisplayName;
-      caption.className = "mt-1 text-sm text-gray-300 truncate text-center";
+      img.onclick = () => showCG(cg, parentName || groupName, cgList, section);
 
       wrapper.appendChild(img);
-      wrapper.appendChild(caption);
+
+      // For non-manga, show name
+      if (section !== "Manga") {
+        const caption = document.createElement("p");
+        caption.textContent = cg.Name || groupName || "Unknown";
+        caption.className = "mt-1 text-sm text-gray-300 truncate text-center";
+        wrapper.appendChild(caption);
+      }
+
       gridDiv.appendChild(wrapper);
     });
   });
@@ -77,9 +79,7 @@ export function showThumbnailGrid(cgList, parentName = "", section = "CG") {
 /** Show individual CG */
 export function showCG(cg, parentName = "", parentList = [], section = "CG") {
   const main = document.getElementById("mainContent");
-  const displayName = cg.Name || parentName || "Unknown";
-
-  let categoryPath = parentName ? `${section}/${parentName}` : section;
+  const categoryPath = parentName ? `${section}/${parentName}` : section;
 
   let relativePath = cg.Bg?.replace(/^Assets[\\/]/, "").replace(/\\/g, "/") || "";
   let parts = relativePath.split("/");
@@ -96,11 +96,13 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
         <span class="text-gray-200 font-bold">${categoryPath}</span>
       </div>
 
-      <h2 class="text-2xl font-bold mb-4">${displayName}</h2>
+      ${section !== "Manga" ? `<h2 class="text-2xl font-bold mb-4">${cg.Name || parentName || "Unknown"}</h2>` : ""}
+
       <div class="rounded-lg overflow-hidden shadow-lg bg-gray-800 p-2">
-        <img id="cgImage" src="${imgUrl}" alt="${displayName}" class="w-full object-contain max-h-[70vh] mx-auto cursor-pointer">
+        <img id="cgImage" src="${imgUrl}" alt="${baseName}" class="w-full object-contain max-h-[70vh] mx-auto cursor-pointer">
       </div>
-      <p class="mt-4 text-gray-300">${cg.Desc || ""}</p>
+
+      ${section !== "Manga" ? `<p class="mt-4 text-gray-300">${cg.Desc || ""}</p>` : ""}
       <p class="text-gray-500 text-sm mt-2">ID: ${cg.Id}</p>
     </div>
 
@@ -118,6 +120,7 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
     modalImage.src = imgUrl;
     imageModal.classList.remove("hidden");
   });
+
   imageModal.addEventListener("click", e => {
     if (e.target === imageModal) {
       imageModal.classList.add("hidden");

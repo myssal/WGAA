@@ -1,10 +1,11 @@
-import { showCG, showThumbnailGrid } from "./viewer.js";
+// sidebar.js
+import { showThumbnailGrid } from "./viewer.js";
 
 /** Render Sidebar */
 export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, mangaDetails) {
   const container = document.getElementById("categoryList");
   container.innerHTML = "";
-  container.className = "h-full overflow-y-auto pr-2 space-y-2 text-gray-200";
+  container.className = "h-full overflow-y-auto pr-2 pl-4 space-y-2 text-gray-200";
 
   const query = document.getElementById("globalSearch")?.value.trim().toLowerCase() || "";
 
@@ -63,15 +64,13 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
     const groupDiv = document.createElement("div");
     groupDiv.className = "pl-2 mb-1";
 
-    // Group-level header with arrow
     const groupHeader = document.createElement("button");
     groupHeader.className = "w-full text-left flex justify-between items-center px-3 py-1 rounded hover:bg-gray-700 transition text-sm font-semibold";
     groupHeader.innerHTML = `<span>${group.Name}</span><span class="transition-transform duration-200" data-arrow>▼</span>`;
 
-    // Chapters container (collapsible)
     const chapterContainer = document.createElement("div");
     chapterContainer.className = "pl-2 overflow-hidden transition-all duration-300";
-    chapterContainer.style.display = "none"; // initially collapsed
+    chapterContainer.style.display = "none";
 
     const chapters = mangaChapters.filter(c => c.GroupId === group.Id).sort((a,b)=>a.Order-b.Order);
 
@@ -85,14 +84,17 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
 
       const detailsList = mangaDetails.filter(d => d.ChapterId === chap.Id);
       chapterHeader.addEventListener("click", () => {
-        if (detailsList.length > 0) showThumbnailGrid(detailsList, chap.Name, "Manga");
+        if (detailsList.length > 0) {
+          const augmented = detailsList.map(d => ({ ...d, ChapterName: chap.Name }));
+          showThumbnailGrid(augmented, `${group.Name}/${chap.Name}`, "Manga");
+        }
       });
 
       chapterDiv.appendChild(chapterHeader);
       chapterContainer.appendChild(chapterDiv);
     });
 
-    // Toggle chapter container
+    // Toggle
     let expanded = false;
     const arrow = groupHeader.querySelector("[data-arrow]");
     groupHeader.addEventListener("click", () => {
@@ -100,12 +102,12 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
       chapterContainer.style.display = expanded ? "block" : "none";
       arrow.style.transform = expanded ? "rotate(180deg)" : "rotate(0deg)";
 
-      // Show all CGs of all chapters when expanding
       if (expanded) {
         const allCGs = [];
         chapters.forEach(chap => {
-          mangaDetails.filter(d => d.ChapterId === chap.Id)
-                      .forEach(d => allCGs.push({ ...d, ChapterName: chap.Name }));
+          mangaDetails
+            .filter(d => d.ChapterId === chap.Id)
+            .forEach(d => allCGs.push({ ...d, ChapterName: chap.Name }));
         });
         if (allCGs.length > 0) showThumbnailGrid(allCGs, group.Name, "Manga");
       }
