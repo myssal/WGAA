@@ -1,3 +1,6 @@
+// viewer.js
+import { ASSET_REPO, BRANCH } from "./config.js";
+
 export function showCG(cg, parentName = "", parentList = [], section = "CG") {
   const main = document.getElementById("mainContent");
   const displayName = cg.Name || parentName || "Unknown";
@@ -11,11 +14,12 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
   let filename = parts.pop();
   let dir = parts.join("/").toLowerCase();
 
-  let imgUrl = filename 
-    ? `https://raw.githubusercontent.com/myssal/PGR-Assets/master/${dir}/${filename.replace(/\.jpg$/, ".png")}`
+  let imgUrl = filename
+    ? `https://raw.githubusercontent.com/${ASSET_REPO}/${BRANCH}/${dir}/${filename.replace(/\.jpg$/, ".png")}`
     : "";
-  let thumbUrl = filename 
-    ? `https://raw.githubusercontent.com/myssal/PGR-Assets/master/thumbnails/${dir}/${filename.replace(/\.jpg$/, ".png")}`
+
+  let thumbUrl = filename
+    ? `https://raw.githubusercontent.com/${ASSET_REPO}/${BRANCH}/thumbnails/${dir}/${filename.replace(/\.jpg$/, "")}_thumb.webp`
     : "";
 
   main.innerHTML = `
@@ -65,7 +69,7 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
   });
 }
 
-// Updated showCGGrid to pass section
+// Updated showCGGrid to use thumbnails from ASSET_REPO
 export function showCGGrid(cgList, parentName = "", section = "CG") {
   const main = document.getElementById("mainContent");
   main.innerHTML = `<div class="max-w-6xl mx-auto p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>`;
@@ -77,8 +81,8 @@ export function showCGGrid(cgList, parentName = "", section = "CG") {
     let filename = parts.pop();
     let dir = parts.join("/").toLowerCase();
 
-    let thumbUrl = filename 
-      ? `https://raw.githubusercontent.com/myssal/PGR-Assets/master/thumbnails/${dir}/${filename.replace(/\.jpg$/, ".png")}`
+    let thumbUrl = filename
+      ? `https://raw.githubusercontent.com/${ASSET_REPO}/${BRANCH}/thumbnails/${dir}/${filename.replace(/\.jpg$/, "")}_thumb.webp`
       : "";
 
     const img = document.createElement("img");
