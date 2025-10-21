@@ -4,5 +4,6 @@
   "cgSection": "CG",
   "mangaSection": "漫画",
   "backButton": "← 返回",
-  "idLabel": "编号"
+  "idLabel": "编号",
+  "loading": "加载中..."
 }

@@ -4,5 +4,6 @@
   "cgSection": "CG",
   "mangaSection": "Manga",
   "backButton": "← Back",
-  "idLabel": "ID"
+  "idLabel": "ID",
+  "loading": "Loading..."
 }
