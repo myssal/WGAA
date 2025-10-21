@@ -84,6 +84,7 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
   const prev = parentList[index - 1];
   const next = parentList[index + 1];
 
+  // Keep container height stable using aspect ratio + min height
   main.innerHTML = `
     <div class="max-w-5xl mx-auto text-center relative">
       <div class="flex justify-between items-center mb-4">
@@ -93,14 +94,25 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
 
       ${section !== "Manga" ? `<h2 class="text-2xl font-bold mb-4">${cg.Name || parentName || "Unknown"}</h2>` : ""}
 
-      <div class="relative rounded-lg overflow-hidden shadow-lg bg-gray-800 p-2">
-        <img id="cgImage" src="${imgUrl}" alt="${baseName}" class="w-full object-contain max-h-[70vh] mx-auto cursor-pointer">
+      <div class="relative rounded-lg overflow-hidden shadow-lg bg-gray-800 flex items-center justify-center"
+           style="width:100%; max-width:90%; aspect-ratio: 16 / 9; min-height: 60vh; margin: 0 auto;">
+        
+        <!-- Loading placeholder -->
+        <div id="loadingSpinner" class="absolute inset-0 flex items-center justify-center text-gray-500 text-sm">
+          Loading...
+        </div>
+
+        <!-- Actual image -->
+        <img id="cgImage" src="${imgUrl}" alt="${baseName}"
+             class="absolute inset-0 w-full h-full object-contain transition-opacity duration-500 opacity-0">
 
         <!-- Navigation arrows -->
-        <button id="prevBtn" ${!prev ? "disabled" : ""} class="absolute left-3 top-1/2 transform -translate-y-1/2 text-3xl text-gray-300 hover:text-white disabled:opacity-30">
+        <button id="prevBtn" ${!prev ? "disabled" : ""} 
+                class="absolute left-3 top-1/2 -translate-y-1/2 text-3xl text-gray-300 hover:text-white disabled:opacity-30 z-10">
           &#10094;
         </button>
-        <button id="nextBtn" ${!next ? "disabled" : ""} class="absolute right-3 top-1/2 transform -translate-y-1/2 text-3xl text-gray-300 hover:text-white disabled:opacity-30">
+        <button id="nextBtn" ${!next ? "disabled" : ""} 
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-3xl text-gray-300 hover:text-white disabled:opacity-30 z-10">
           &#10095;
         </button>
       </div>
@@ -116,6 +128,16 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
   `;
 
   const cgImage = document.getElementById("cgImage");
+  const spinner = document.getElementById("loadingSpinner");
+
+  // fade-in effect on load
+  cgImage.onload = () => {
+    spinner.style.display = "none";
+    cgImage.classList.remove("opacity-0");
+    cgImage.classList.add("opacity-100");
+  };
+
+  // Modal logic
   const imageModal = document.getElementById("imageModal");
   const modalImage = document.getElementById("modalImage");
 
