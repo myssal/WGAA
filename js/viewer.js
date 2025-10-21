@@ -5,24 +5,16 @@ export function showThumbnailGrid(cgList, parentName = "", section = "CG") {
   const main = document.getElementById("mainContent");
   main.innerHTML = ""; // clear
 
-  // If parentName exists, show category path
+  // Show category path only when inside a subcategory
   if (parentName) {
     const pathDiv = document.createElement("div");
     pathDiv.className = "flex justify-between items-center mb-4";
 
-    const backBtn = document.createElement("button");
-    backBtn.textContent = "← Back";
-    backBtn.className = "px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm";
-    backBtn.onclick = () => {
-      // On back, show thumbnails of parent level
-      showThumbnailGrid(cgList, "", section);
-    };
-
+    // Only show "Back" if there’s actually a higher-level view to return to
     const pathSpan = document.createElement("span");
     pathSpan.textContent = `${section}/${parentName}`;
     pathSpan.className = "text-gray-200 font-bold";
 
-    pathDiv.appendChild(backBtn);
     pathDiv.appendChild(pathSpan);
     main.appendChild(pathDiv);
   }
