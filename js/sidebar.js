@@ -1,5 +1,5 @@
-// sidebar.js
 import { showThumbnailGrid } from "./viewer.js";
+import { t } from "./locale.js";
 
 /** Render Sidebar */
 export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, mangaDetails) {
@@ -14,8 +14,7 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
     div.className = "group-item border-b border-gray-700 pb-2";
 
     const header = document.createElement("button");
-    header.className =
-      "w-full text-left flex justify-between items-center px-2 py-2 bg-gray-800 rounded hover:bg-gray-700 transition";
+    header.className = "w-full text-left flex justify-between items-center px-2 py-2 bg-gray-800 rounded hover:bg-gray-700 transition";
     header.innerHTML = `<span class="font-semibold">${title}</span><span class="transition-transform duration-200" data-arrow>▼</span>`;
 
     const content = document.createElement("div");
@@ -37,7 +36,7 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
   };
 
   /** CG Section */
-  const cgSection = createCollapsible("CG");
+  const cgSection = createCollapsible(t("cgSection"));
   cgGroups.sort((a,b)=>a.Order-b.Order).forEach(group => {
     const groupDiv = document.createElement("div");
     groupDiv.className = "pl-2 mb-1";
@@ -59,7 +58,7 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
   container.appendChild(cgSection.div);
 
   /** Manga Section */
-  const mangaSection = createCollapsible("Manga");
+  const mangaSection = createCollapsible(t("mangaSection"));
   mangaGroups.sort((a,b)=>a.Order-b.Order).forEach(group => {
     const groupDiv = document.createElement("div");
     groupDiv.className = "pl-2 mb-1";
@@ -94,7 +93,7 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
       chapterContainer.appendChild(chapterDiv);
     });
 
-    // Toggle
+    // Toggle for the group
     let expanded = false;
     const arrow = groupHeader.querySelector("[data-arrow]");
     groupHeader.addEventListener("click", () => {
@@ -103,6 +102,7 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
       arrow.style.transform = expanded ? "rotate(180deg)" : "rotate(0deg)";
 
       if (expanded) {
+        // Show all CGs in this group by default
         const allCGs = [];
         chapters.forEach(chap => {
           mangaDetails

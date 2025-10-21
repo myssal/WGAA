@@ -1,5 +1,6 @@
 // viewer.js
-import { ASSET_REPO, BRANCH } from "./config.js";
+import { ASSET_REPO, BRANCH, currentRegion } from "./config.js";
+import { t } from "./locale.js"; // your localization function
 
 /** Thumbnail Grid Renderer */
 export function showThumbnailGrid(cgList, parentName = "", section = "CG") {
@@ -9,7 +10,7 @@ export function showThumbnailGrid(cgList, parentName = "", section = "CG") {
   if (parentName) {
     const pathDiv = document.createElement("div");
     pathDiv.className = "flex justify-between items-center mb-4";
-    pathDiv.innerHTML = `<span class="text-gray-200 font-bold">${section}/${parentName}</span>`;
+    pathDiv.innerHTML = `<span class="text-gray-200 font-bold">${t(section)}${parentName ? "/" + parentName : ""}</span>`;
     main.appendChild(pathDiv);
   }
 
@@ -56,7 +57,7 @@ export function showThumbnailGrid(cgList, parentName = "", section = "CG") {
 
       if (section !== "Manga") {
         const caption = document.createElement("p");
-        caption.textContent = cg.Name || groupName || "Unknown";
+        caption.textContent = cg.Name || groupName || t("unknown");
         caption.className = "mt-1 text-sm text-gray-300 truncate text-center";
         wrapper.appendChild(caption);
       }
@@ -69,7 +70,7 @@ export function showThumbnailGrid(cgList, parentName = "", section = "CG") {
 /** Show individual CG with navigation */
 export function showCG(cg, parentName = "", parentList = [], section = "CG") {
   const main = document.getElementById("mainContent");
-  const categoryPath = parentName ? `${section}/${parentName}` : section;
+  const categoryPath = parentName ? `${t(section)}/${parentName}` : t(section);
 
   let relativePath = cg.Bg?.replace(/^Assets[\\/]/, "").replace(/\\/g, "/") || "";
   let parts = relativePath.split("/");
@@ -88,18 +89,18 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
   main.innerHTML = `
     <div class="max-w-5xl mx-auto text-center relative">
       <div class="flex justify-between items-center mb-4">
-        <button id="backBtn" class="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm">← Back</button>
+        <button id="backBtn" class="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm">${t("backButton")}</button>
         <span class="text-gray-200 font-bold">${categoryPath}</span>
       </div>
 
-      ${section !== "Manga" ? `<h2 class="text-2xl font-bold mb-4">${cg.Name || parentName || "Unknown"}</h2>` : ""}
+      ${section !== "Manga" ? `<h2 class="text-2xl font-bold mb-4">${cg.Name || parentName || t("unknown")}</h2>` : ""}
 
       <div class="relative rounded-lg overflow-hidden shadow-lg bg-gray-800 flex items-center justify-center"
            style="width:100%; max-width:90%; aspect-ratio: 16 / 9; min-height: 60vh; margin: 0 auto;">
         
         <!-- Loading placeholder -->
         <div id="loadingSpinner" class="absolute inset-0 flex items-center justify-center text-gray-500 text-sm">
-          Loading...
+          ${t("loading")}
         </div>
 
         <!-- Actual image -->
@@ -118,7 +119,7 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
       </div>
 
       ${section !== "Manga" ? `<p class="mt-4 text-gray-300">${cg.Desc || ""}</p>` : ""}
-      <p class="text-gray-500 text-sm mt-2">ID: ${cg.Id}</p>
+      <p class="text-gray-500 text-sm mt-2">${t("idLabel")}: ${cg.Id}</p>
     </div>
 
     <!-- Modal -->
@@ -130,7 +131,7 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
   const cgImage = document.getElementById("cgImage");
   const spinner = document.getElementById("loadingSpinner");
 
-  // fade-in effect on load
+  // Fade-in effect
   cgImage.onload = () => {
     spinner.style.display = "none";
     cgImage.classList.remove("opacity-0");
@@ -153,23 +154,15 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
     }
   });
 
-  // Navigation
+  // Navigation buttons
   document.getElementById("backBtn").addEventListener("click", () => {
     showThumbnailGrid(parentList, parentName, section);
   });
 
-  if (prev) {
-    document.getElementById("prevBtn").addEventListener("click", () => {
-      showCG(prev, parentName, parentList, section);
-    });
-  }
-  if (next) {
-    document.getElementById("nextBtn").addEventListener("click", () => {
-      showCG(next, parentName, parentList, section);
-    });
-  }
+  if (prev) document.getElementById("prevBtn").addEventListener("click", () => showCG(prev, parentName, parentList, section));
+  if (next) document.getElementById("nextBtn").addEventListener("click", () => showCG(next, parentName, parentList, section));
 
-  // Keyboard navigation support
+  // Keyboard support
   document.onkeydown = (e) => {
     if (e.key === "ArrowLeft" && prev) showCG(prev, parentName, parentList, section);
     if (e.key === "ArrowRight" && next) showCG(next, parentName, parentList, section);
