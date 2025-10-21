@@ -1,26 +1,101 @@
-// viewer.js
 import { ASSET_REPO, BRANCH } from "./config.js";
 
+/** Universal thumbnail grid renderer */
+export function showThumbnailGrid(cgList, parentName = "", section = "CG") {
+  const main = document.getElementById("mainContent");
+  main.innerHTML = ""; // clear
+
+  // If parentName exists, show category path
+  if (parentName) {
+    const pathDiv = document.createElement("div");
+    pathDiv.className = "flex justify-between items-center mb-4";
+
+    const backBtn = document.createElement("button");
+    backBtn.textContent = "← Back";
+    backBtn.className = "px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm";
+    backBtn.onclick = () => {
+      // On back, show thumbnails of parent level
+      showThumbnailGrid(cgList, "", section);
+    };
+
+    const pathSpan = document.createElement("span");
+    pathSpan.textContent = `${section}/${parentName}`;
+    pathSpan.className = "text-gray-200 font-bold";
+
+    pathDiv.appendChild(backBtn);
+    pathDiv.appendChild(pathSpan);
+    main.appendChild(pathDiv);
+  }
+
+  // Group by parent (optional for Manga chapters)
+  let grouped = {};
+  cgList.forEach(cg => {
+    const key = cg.ChapterName || parentName || "All";
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(cg);
+  });
+
+  Object.keys(grouped).forEach(groupName => {
+    if (groupName !== parentName && groupName !== "All") {
+      const title = document.createElement("h3");
+      title.textContent = groupName;
+      title.className = "text-lg font-bold text-gray-200 mt-4 mb-2";
+      main.appendChild(title);
+    }
+
+    const gridDiv = document.createElement("div");
+    gridDiv.className = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6";
+    main.appendChild(gridDiv);
+
+    grouped[groupName].forEach(cg => {
+      let relativePath = cg.Bg?.replace(/^Assets[\\/]/, "").replace(/\\/g, "/") || "";
+      let parts = relativePath.split("/");
+      let filename = parts.pop();
+      let dir = parts.join("/").toLowerCase();
+      if (!filename) return;
+
+      const baseName = filename.replace(/\.(jpg|png|jpeg)$/i, "");
+      const thumbUrl = `https://raw.githubusercontent.com/${ASSET_REPO}/${BRANCH}/thumbnails/${dir}/${baseName}_thumb.webp`;
+      const imgUrl = `https://raw.githubusercontent.com/${ASSET_REPO}/${BRANCH}/${dir}/${baseName}.png`;
+
+      const cgDisplayName = cg.Name || groupName || "Unknown";
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "flex flex-col items-center";
+
+      const img = document.createElement("img");
+      img.src = thumbUrl;
+      img.alt = cgDisplayName;
+      img.title = cgDisplayName;
+      img.className = "w-full h-40 object-cover rounded cursor-pointer hover:scale-105 transition";
+      img.loading = "lazy";
+      img.onclick = () => showCG(cg, groupName, cgList, section);
+
+      const caption = document.createElement("p");
+      caption.textContent = cgDisplayName;
+      caption.className = "mt-1 text-sm text-gray-300 truncate text-center";
+
+      wrapper.appendChild(img);
+      wrapper.appendChild(caption);
+      gridDiv.appendChild(wrapper);
+    });
+  });
+}
+
+/** Show individual CG */
 export function showCG(cg, parentName = "", parentList = [], section = "CG") {
   const main = document.getElementById("mainContent");
   const displayName = cg.Name || parentName || "Unknown";
 
-  // Category path display (bold)
   let categoryPath = parentName ? `${section}/${parentName}` : section;
 
-  // Compute image URLs
   let relativePath = cg.Bg?.replace(/^Assets[\\/]/, "").replace(/\\/g, "/") || "";
   let parts = relativePath.split("/");
   let filename = parts.pop();
   let dir = parts.join("/").toLowerCase();
 
-  let imgUrl = filename
-    ? `https://raw.githubusercontent.com/${ASSET_REPO}/${BRANCH}/${dir}/${filename.replace(/\.jpg$/, ".png")}`
-    : "";
-
-  let thumbUrl = filename
-    ? `https://raw.githubusercontent.com/${ASSET_REPO}/${BRANCH}/thumbnails/${dir}/${filename.replace(/\.jpg$/, "")}_thumb.webp`
-    : "";
+  const baseName = filename?.replace(/\.(jpg|png|jpeg)$/i, "") || "";
+  const imgUrl = filename ? `https://raw.githubusercontent.com/${ASSET_REPO}/${BRANCH}/${dir}/${baseName}.png` : "";
 
   main.innerHTML = `
     <div class="max-w-4xl mx-auto text-center">
@@ -37,13 +112,12 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
       <p class="text-gray-500 text-sm mt-2">ID: ${cg.Id}</p>
     </div>
 
-    <!-- Modal Overlay -->
+    <!-- Modal -->
     <div id="imageModal" class="fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center hidden z-50">
       <img id="modalImage" src="" class="max-w-[90%] max-h-[90%] rounded shadow-lg">
     </div>
   `;
 
-  // Modal behavior
   const cgImage = document.getElementById("cgImage");
   const imageModal = document.getElementById("imageModal");
   const modalImage = document.getElementById("modalImage");
@@ -52,47 +126,17 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
     modalImage.src = imgUrl;
     imageModal.classList.remove("hidden");
   });
-
-  imageModal.addEventListener("click", (e) => {
+  imageModal.addEventListener("click", e => {
     if (e.target === imageModal) {
       imageModal.classList.add("hidden");
       modalImage.src = "";
     }
   });
 
-  // Back button
   const backBtn = document.getElementById("backBtn");
   backBtn.addEventListener("click", () => {
     if (parentList && parentList.length > 0) {
-      showCGGrid(parentList, parentName, section);
+      showThumbnailGrid(parentList, parentName, section);
     }
-  });
-}
-
-// Updated showCGGrid to use thumbnails from ASSET_REPO
-export function showCGGrid(cgList, parentName = "", section = "CG") {
-  const main = document.getElementById("mainContent");
-  main.innerHTML = `<div class="max-w-6xl mx-auto p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>`;
-  const grid = main.querySelector("div");
-
-  cgList.forEach(cg => {
-    let relativePath = cg.Bg?.replace(/^Assets[\\/]/, "").replace(/\\/g, "/") || "";
-    let parts = relativePath.split("/");
-    let filename = parts.pop();
-    let dir = parts.join("/").toLowerCase();
-
-    let thumbUrl = filename
-      ? `https://raw.githubusercontent.com/${ASSET_REPO}/${BRANCH}/thumbnails/${dir}/${filename.replace(/\.jpg$/, "")}_thumb.webp`
-      : "";
-
-    const img = document.createElement("img");
-    img.src = thumbUrl;
-    img.alt = cg.Name || parentName;
-    img.title = cg.Name || parentName;
-    img.className = "w-full h-40 object-cover rounded cursor-pointer hover:scale-105 transition";
-    img.loading = "lazy";
-    img.onclick = () => showCG(cg, parentName, cgList, section);
-
-    grid.appendChild(img);
   });
 }
