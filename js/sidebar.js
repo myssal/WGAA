@@ -7,8 +7,6 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
   container.innerHTML = "";
   container.className = "h-full overflow-y-auto pr-2 pl-4 space-y-2 text-gray-200";
 
-  const query = document.getElementById("globalSearch")?.value.trim().toLowerCase() || "";
-
   const createCollapsible = (title) => {
     const div = document.createElement("div");
     div.className = "group-item border-b border-gray-700 pb-2";
@@ -46,10 +44,9 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
     groupHeader.textContent = group.Name;
 
     const groupDetails = cgDetails.filter(d => d.GroupId === group.Id).sort((a,b)=>a.Order-b.Order);
-    const filteredDetails = query ? groupDetails.filter(d=>d.Name.toLowerCase().includes(query)) : groupDetails;
 
     groupHeader.addEventListener("click", () => {
-      if (filteredDetails.length > 0) showThumbnailGrid(filteredDetails, group.Name, "CG");
+      if (groupDetails.length > 0) showThumbnailGrid(groupDetails, group.Name, "CG");
     });
 
     groupDiv.appendChild(groupHeader);

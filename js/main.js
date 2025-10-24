@@ -10,21 +10,20 @@ export let mangaDetails = [];  // ArchiveComicDetail
 export let emojis = []; // Emoji
 
 async function loadConfigs(region) {
-  const baseShareUrl = `https://cdn.jsdelivr.net/gh/${DATA_REPO}@${BRANCH}/${region}/bytes/share/archive`;
-  const baseClientUrl = `https://cdn.jsdelivr.net/gh/${DATA_REPO}@${BRANCH}/${region}/bytes/client/archive`;
-  const baseShareChatUrl = `https://cdn.jsdelivr.net/gh/${DATA_REPO}@${BRANCH}/${region}/bytes/share/chat`;
+
+  const baseShareUrl = `https://cdn.jsdelivr.net/gh/${DATA_REPO}@${BRANCH}/${region}/bytes/share`;
+  const baseClientUrl = `https://cdn.jsdelivr.net/gh/${DATA_REPO}@${BRANCH}/${region}/bytes/client`;
   
   try {
     await loadLocale(region);
 
     // Update UI placeholders & title
     document.getElementById("headerTitle").textContent = t("title");
-    document.getElementById("globalSearch").placeholder = t("searchPlaceholder");
 
     // Fetch normal CG
     const [groupRes, detailRes] = await Promise.all([
-      fetch(`${baseShareUrl}/CGGroup.json`),
-      fetch(`${baseShareUrl}/CGDetail.json`)
+      fetch(`${baseShareUrl}/archive/CGGroup.json`),
+      fetch(`${baseShareUrl}/archive/CGDetail.json`)
     ]);
     if (!groupRes.ok || !detailRes.ok) throw new Error("Failed to fetch CG config files");
     groups = await groupRes.json();
@@ -32,9 +31,9 @@ async function loadConfigs(region) {
 
     // Fetch Manga/Comic
     const [comicGroupRes, comicChapterRes, comicDetailRes] = await Promise.all([
-      fetch(`${baseShareUrl}/ArchiveComicGroup.json`),
-      fetch(`${baseShareUrl}/ArchiveComicChapter.json`),
-      fetch(`${baseClientUrl}/ArchiveComicDetail.json`)
+      fetch(`${baseShareUrl}/archive/ArchiveComicGroup.json`),
+      fetch(`${baseShareUrl}/archive/ArchiveComicChapter.json`),
+      fetch(`${baseClientUrl}/archive/ArchiveComicDetail.json`)
     ]);
     if (!comicGroupRes.ok || !comicChapterRes.ok || !comicDetailRes.ok) throw new Error("Failed to fetch Manga config files");
     mangaGroups = await comicGroupRes.json();
@@ -42,7 +41,7 @@ async function loadConfigs(region) {
     mangaDetails = await comicDetailRes.json();
 
     // Fetch Emoji
-    const emojiRes = await fetch(`${baseShareChatUrl}/Emoji.json`);
+    const emojiRes = await fetch(`${baseShareUrl}/chat/Emoji.json`);
     if (!emojiRes.ok) throw new Error("Failed to fetch Emoji config file");
     emojis = await emojiRes.json();
 
@@ -60,9 +59,7 @@ document.getElementById("regionSelect").addEventListener("change", e => {
   loadConfigs(e.target.value);
 });
 
-document.getElementById("globalSearch").addEventListener("input", () => {
-  renderSidebar(groups, details, mangaGroups, mangaChapters, mangaDetails, emojis);
-});
+
 
 /** Initialize */
 loadConfigs(currentRegion);
