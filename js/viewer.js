@@ -172,6 +172,17 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
   if (prev) document.getElementById("prevBtn").addEventListener("click", () => showCG(prev, parentName, parentList, section));
   if (next) document.getElementById("nextBtn").addEventListener("click", () => showCG(next, parentName, parentList, section));
 
+  // Preload other images in the same group
+  parentList.forEach(item => {
+    if (item.Id !== cg.Id) {
+      const preloadUrl = getAssetUrl(item.Bg, { type: 'cg' });
+      if (preloadUrl) {
+        const preloadImg = new Image();
+        preloadImg.src = preloadUrl;
+      }
+    }
+  });
+
   // Keyboard support
   document.onkeydown = (e) => {
     if (e.key === "ArrowLeft" && prev) showCG(prev, parentName, parentList, section);
