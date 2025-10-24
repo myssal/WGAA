@@ -264,3 +264,71 @@ function showEmojiDetails(emoji) {
     }
   };
 }
+
+export function showStorySpriteGrid(storySprites) {
+  const main = document.getElementById("mainContent");
+  main.innerHTML = "";
+
+  const pathDiv = document.createElement("div");
+  pathDiv.className = "flex justify-between items-center mb-4";
+  pathDiv.innerHTML = `<span class="text-gray-200 font-bold">${t("storySpriteSection")}</span>`;
+  main.appendChild(pathDiv);
+
+  const gridDiv = document.createElement("div");
+  gridDiv.className = "grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4 mb-6";
+  main.appendChild(gridDiv);
+
+  storySprites.forEach(sprite => {
+    const imgUrl = getAssetUrl(sprite.RoleIcon);
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "flex flex-col items-center cursor-pointer";
+    wrapper.onclick = () => showStorySpriteDetails(sprite, storySprites);
+
+    const img = document.createElement("img");
+    img.src = imgUrl;
+    img.alt = sprite.Name;
+    img.className = "w-full h-48 object-contain rounded hover:scale-105 transition";
+    img.loading = "lazy";
+
+    const caption = document.createElement("p");
+    caption.textContent = sprite.Name;
+    caption.className = "mt-1 text-sm text-gray-300 truncate text-center w-full";
+
+    wrapper.appendChild(img);
+    wrapper.appendChild(caption);
+    gridDiv.appendChild(wrapper);
+  });
+}
+
+function showStorySpriteDetails(sprite, allSprites) {
+  const main = document.getElementById("mainContent");
+  main.innerHTML = "";
+
+  const imgUrl = getAssetUrl(sprite.RoleIcon);
+
+  main.innerHTML = `
+    <div class="max-w-5xl mx-auto text-center relative">
+      <div class="flex justify-between items-center mb-4">
+        <button id="backBtn" class="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm">${t("backButton")}</button>
+        <span class="text-gray-200 font-bold">${t("storySpriteSection")}</span>
+      </div>
+
+      <h2 class="text-2xl font-bold mb-4">${sprite.Name}</h2>
+
+      <div class="relative rounded-lg overflow-hidden shadow-lg bg-gray-800 flex items-center justify-center"
+           style="width:100%; max-width:90%; margin: 0 auto;">
+        
+        <img id="spriteImage" src="${imgUrl}" alt="${sprite.Name}"
+             class="object-contain transition-opacity duration-500 opacity-100">
+
+      </div>
+
+      <p class="text-gray-500 text-sm mt-2">${t("idLabel")}: ${sprite.RoleId}</p>
+    </div>
+  `;
+
+  document.getElementById("backBtn").addEventListener("click", () => {
+    showStorySpriteGrid(allSprites);
+  });
+}

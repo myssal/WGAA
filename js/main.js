@@ -8,9 +8,9 @@ export let mangaGroups = [];  // ArchiveComicGroup
 export let mangaChapters = []; // ArchiveComicChapter
 export let mangaDetails = [];  // ArchiveComicDetail
 export let emojis = []; // Emoji
+export let storySprites = []; // MovieActor
 
 async function loadConfigs(region) {
-
   const baseShareUrl = `https://cdn.jsdelivr.net/gh/${DATA_REPO}@${BRANCH}/${region}/bytes/share`;
   const baseClientUrl = `https://cdn.jsdelivr.net/gh/${DATA_REPO}@${BRANCH}/${region}/bytes/client`;
   
@@ -45,8 +45,13 @@ async function loadConfigs(region) {
     if (!emojiRes.ok) throw new Error("Failed to fetch Emoji config file");
     emojis = await emojiRes.json();
 
+    // Fetch Story Sprites
+    const storySpriteRes = await fetch(`${baseClientUrl}/movie/MovieActor.json`);
+    if (!storySpriteRes.ok) throw new Error("Failed to fetch Story Sprite config file");
+    storySprites = await storySpriteRes.json();
+
     // Render sidebar
-    renderSidebar(groups, details, mangaGroups, mangaChapters, mangaDetails, emojis);
+    renderSidebar(groups, details, mangaGroups, mangaChapters, mangaDetails, emojis, storySprites);
   } catch (err) {
     console.error("Failed to load config:", err);
     document.getElementById("mainContent").innerHTML =

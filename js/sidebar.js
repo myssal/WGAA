@@ -1,8 +1,8 @@
-import { showThumbnailGrid, showEmojiGrid } from "./viewer.js";
+import { showThumbnailGrid, showEmojiGrid, showStorySpriteGrid } from "./viewer.js";
 import { t } from "./locale.js";
 
 /** Render Sidebar */
-export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, mangaDetails, emojis) {
+export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, mangaDetails, emojis, storySprites) {
   const container = document.getElementById("categoryList");
   container.innerHTML = "";
   container.className = "h-full overflow-y-auto pr-2 pl-4 space-y-2 text-gray-200";
@@ -130,4 +130,18 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
 
   emojiButtonDiv.appendChild(emojiButton);
   container.appendChild(emojiButtonDiv);
+
+  /** Story Sprite Section */
+  const storySpriteButtonDiv = document.createElement("div");
+  storySpriteButtonDiv.className = "group-item border-b border-gray-700 pb-2";
+
+  const storySpriteButton = document.createElement("button");
+  storySpriteButton.className = "w-full text-left flex justify-between items-center px-2 py-2 bg-gray-800 rounded hover:bg-gray-700 transition";
+  storySpriteButton.innerHTML = `<span class="font-semibold">${t("storySpriteSection")}</span>`;
+  storySpriteButton.addEventListener("click", () => {
+    showStorySpriteGrid(storySprites);
+  });
+
+  storySpriteButtonDiv.appendChild(storySpriteButton);
+  container.appendChild(storySpriteButtonDiv);
 }
