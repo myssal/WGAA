@@ -1,8 +1,8 @@
-import { showThumbnailGrid } from "./viewer.js";
+import { showThumbnailGrid, showEmojiGrid } from "./viewer.js";
 import { t } from "./locale.js";
 
 /** Render Sidebar */
-export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, mangaDetails) {
+export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, mangaDetails, emojis) {
   const container = document.getElementById("categoryList");
   container.innerHTML = "";
   container.className = "h-full overflow-y-auto pr-2 pl-4 space-y-2 text-gray-200";
@@ -119,4 +119,18 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
   });
 
   container.appendChild(mangaSection.div);
+
+  /** Emoji Section */
+  const emojiButtonDiv = document.createElement("div");
+  emojiButtonDiv.className = "group-item border-b border-gray-700 pb-2";
+
+  const emojiButton = document.createElement("button");
+  emojiButton.className = "w-full text-left flex justify-between items-center px-2 py-2 bg-gray-800 rounded hover:bg-gray-700 transition";
+  emojiButton.innerHTML = `<span class="font-semibold">${t("emojiSection")}</span>`;
+  emojiButton.addEventListener("click", () => {
+    showEmojiGrid(emojis);
+  });
+
+  emojiButtonDiv.appendChild(emojiButton);
+  container.appendChild(emojiButtonDiv);
 }

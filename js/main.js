@@ -7,11 +7,13 @@ export let details = [];      // CGDetail
 export let mangaGroups = [];  // ArchiveComicGroup
 export let mangaChapters = []; // ArchiveComicChapter
 export let mangaDetails = [];  // ArchiveComicDetail
+export let emojis = []; // Emoji
 
 async function loadConfigs(region) {
   const baseShareUrl = `https://cdn.jsdelivr.net/gh/${DATA_REPO}@${BRANCH}/${region}/bytes/share/archive`;
   const baseClientUrl = `https://cdn.jsdelivr.net/gh/${DATA_REPO}@${BRANCH}/${region}/bytes/client/archive`;
-
+  const baseShareChatUrl = `https://cdn.jsdelivr.net/gh/${DATA_REPO}@${BRANCH}/${region}/bytes/share/chat`;
+  
   try {
     await loadLocale(region);
 
@@ -39,8 +41,13 @@ async function loadConfigs(region) {
     mangaChapters = await comicChapterRes.json();
     mangaDetails = await comicDetailRes.json();
 
+    // Fetch Emoji
+    const emojiRes = await fetch(`${baseShareChatUrl}/Emoji.json`);
+    if (!emojiRes.ok) throw new Error("Failed to fetch Emoji config file");
+    emojis = await emojiRes.json();
+
     // Render sidebar
-    renderSidebar(groups, details, mangaGroups, mangaChapters, mangaDetails);
+    renderSidebar(groups, details, mangaGroups, mangaChapters, mangaDetails, emojis);
   } catch (err) {
     console.error("Failed to load config:", err);
     document.getElementById("mainContent").innerHTML =
@@ -54,7 +61,7 @@ document.getElementById("regionSelect").addEventListener("change", e => {
 });
 
 document.getElementById("globalSearch").addEventListener("input", () => {
-  renderSidebar(groups, details, mangaGroups, mangaChapters, mangaDetails);
+  renderSidebar(groups, details, mangaGroups, mangaChapters, mangaDetails, emojis);
 });
 
 /** Initialize */

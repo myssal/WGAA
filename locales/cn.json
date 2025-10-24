@@ -1,9 +1,10 @@
 {
-  "title": "WGAA 博物馆",
+  "title": "WGAA 博物館",
   "searchPlaceholder": "搜索 CG...",
   "cgSection": "CG",
-  "mangaSection": "漫画",
+  "mangaSection": "漫畫",
+  "emojiSection": "表情",
   "backButton": "← 返回",
-  "idLabel": "编号",
-  "loading": "加载中..."
+  "idLabel": "編號",
+  "loading": "加載中..."
 }

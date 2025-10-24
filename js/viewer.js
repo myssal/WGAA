@@ -168,3 +168,86 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
     if (e.key === "ArrowRight" && next) showCG(next, parentName, parentList, section);
   };
 }
+
+export function showEmojiGrid(emojis) {
+  const main = document.getElementById("mainContent");
+  main.innerHTML = "";
+
+  const pathDiv = document.createElement("div");
+  pathDiv.className = "flex justify-between items-center mb-4";
+  pathDiv.innerHTML = `<span class="text-gray-200 font-bold">${t("emojiSection")}</span>`;
+  main.appendChild(pathDiv);
+
+  const gridDiv = document.createElement("div");
+  gridDiv.className = "grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4 mb-6";
+  main.appendChild(gridDiv);
+
+  emojis.sort((a,b) => a.Order - b.Order).forEach(emoji => {
+    let parts = emoji.Path.replace(/^Assets[\\/]/, "").replace(/\\/g, "/").split('/');
+    let filename = parts.pop();
+    let dir = parts.join('/').toLowerCase();
+    const relativePath = `${dir}/${filename}`;
+    const imgUrl = `https://raw.githubusercontent.com/${ASSET_REPO}/${BRANCH}/${relativePath}`;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "flex flex-col items-center cursor-pointer";
+    wrapper.onclick = () => {
+      console.log(imgUrl);
+      showEmojiDetails(emoji);
+    };
+
+    const img = document.createElement("img");
+    img.src = imgUrl;
+    img.alt = emoji.Name;
+    img.className = "w-full h-24 object-contain rounded hover:scale-105 transition";
+    img.loading = "lazy";
+
+    const caption = document.createElement("p");
+    caption.textContent = emoji.ConnotationDesc;
+    caption.className = "mt-1 text-sm text-gray-300 truncate text-center";
+
+    wrapper.appendChild(img);
+    wrapper.appendChild(caption);
+    gridDiv.appendChild(wrapper);
+  });
+}
+
+function showEmojiDetails(emoji) {
+  const modalId = "emoji-details-modal";
+  let modal = document.getElementById(modalId);
+  if (modal) modal.remove();
+
+  let parts = emoji.BigIcon.replace(/^Assets[\\/]/, "").replace(/\\/g, "/").split('/');
+  let filename = parts.pop();
+  let dir = parts.join('/').toLowerCase();
+  const relativePath = `${dir}/${filename}`;
+  const imgUrl = `https://raw.githubusercontent.com/${ASSET_REPO}/${BRANCH}/${relativePath}`;
+  console.log(imgUrl);
+
+  modal = document.createElement("div");
+  modal.id = modalId;
+  modal.className = "fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50";
+  modal.innerHTML = `
+    <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md relative">
+      <button id="close-emoji-modal" class="absolute top-2 right-2 text-gray-400 hover:text-white">&times;</button>
+      <div class="flex">
+        <img src="${imgUrl}" alt="${emoji.ConnotationDesc}" class="w-24 h-24 object-contain rounded mr-8">
+        <div class="text-left">
+          <p class="font-bold">${emoji.ConnotationDesc}</p>
+          <p class="italic">${emoji.WorldDesc}</p>
+          <p>${emoji.Description}</p>
+        </div>
+      </div>
+      <p class="text-xs text-gray-500 mt-4 text-right">ID: ${emoji.Id}</p>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  document.getElementById("close-emoji-modal").onclick = () => modal.remove();
+  modal.onclick = (e) => {
+    if (e.target === modal) {
+      modal.remove();
+    }
+  };
+}
