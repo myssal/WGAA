@@ -2,6 +2,29 @@
 import { ASSET_REPO, BRANCH, currentRegion } from "./config.js";
 import { t } from "./locale.js"; // your localization function
 
+function getAssetUrl(path, options = { type: 'image' }) {
+    if (!path) return "";
+
+    let relativePath = path.replace(/^Assets[\\/]/, "").replace(/\\/g, "/");
+    let parts = relativePath.split('/');
+    let filename = parts.pop();
+    let dir = parts.join('/').toLowerCase();
+
+    let finalPath;
+
+    if (options.type === 'thumbnail') {
+        const baseName = filename.replace(/\.(jpg|png|jpeg)$/i, "");
+        finalPath = `thumbnails/${dir}/${baseName}_thumb.webp`;
+    } else if (options.type === 'cg') {
+        const baseName = filename.replace(/\.(jpg|png|jpeg)$/i, "");
+        finalPath = `${dir}/${baseName}.png`;
+    } else { // emoji and other cases
+        finalPath = `${dir}/${filename}`;
+    }
+
+    return `https://raw.githubusercontent.com/${ASSET_REPO}/${BRANCH}/${finalPath}`;
+}
+
 /** Thumbnail Grid Renderer */
 export function showThumbnailGrid(cgList, parentName = "", section = "CG") {
   const main = document.getElementById("mainContent");
@@ -34,21 +57,15 @@ export function showThumbnailGrid(cgList, parentName = "", section = "CG") {
     main.appendChild(gridDiv);
 
     grouped[groupName].forEach(cg => {
-      let relativePath = cg.Bg?.replace(/^Assets[\\/]/, "").replace(/\\/g, "/") || "";
-      let parts = relativePath.split("/");
-      let filename = parts.pop();
-      let dir = parts.join("/").toLowerCase();
-      if (!filename) return;
-
-      const baseName = filename.replace(/\.(jpg|png|jpeg)$/i, "");
-      const thumbUrl = `https://raw.githubusercontent.com/${ASSET_REPO}/${BRANCH}/thumbnails/${dir}/${baseName}_thumb.webp`;
+      const thumbUrl = getAssetUrl(cg.Bg, { type: 'thumbnail' });
+      if (!thumbUrl) return;
 
       const wrapper = document.createElement("div");
       wrapper.className = "flex flex-col items-center";
 
       const img = document.createElement("img");
       img.src = thumbUrl;
-      img.alt = baseName;
+      img.alt = cg.Name;
       img.className = "w-full h-40 object-cover rounded cursor-pointer hover:scale-105 transition";
       img.loading = "lazy";
       img.onclick = () => showCG(cg, parentName || groupName, cgList, section);
@@ -71,14 +88,7 @@ export function showThumbnailGrid(cgList, parentName = "", section = "CG") {
 export function showCG(cg, parentName = "", parentList = [], section = "CG") {
   const main = document.getElementById("mainContent");
   const categoryPath = parentName ? `${t(section)}/${parentName}` : t(section);
-
-  let relativePath = cg.Bg?.replace(/^Assets[\\/]/, "").replace(/\\/g, "/") || "";
-  let parts = relativePath.split("/");
-  let filename = parts.pop();
-  let dir = parts.join("/").toLowerCase();
-
-  const baseName = filename?.replace(/\.(jpg|png|jpeg)$/i, "") || "";
-  const imgUrl = filename ? `https://raw.githubusercontent.com/${ASSET_REPO}/${BRANCH}/${dir}/${baseName}.png` : "";
+  const imgUrl = getAssetUrl(cg.Bg, { type: 'cg' });
 
   // Find current CG index
   const index = parentList.findIndex(item => item.Id === cg.Id);
@@ -104,7 +114,7 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
         </div>
 
         <!-- Actual image -->
-        <img id="cgImage" src="${imgUrl}" alt="${baseName}"
+        <img id="cgImage" src="${imgUrl}" alt="${cg.Name}"
              class="absolute inset-0 w-full h-full object-contain transition-opacity duration-500 opacity-0">
 
         <!-- Navigation arrows -->
@@ -183,11 +193,7 @@ export function showEmojiGrid(emojis) {
   main.appendChild(gridDiv);
 
   emojis.sort((a,b) => a.Order - b.Order).forEach(emoji => {
-    let parts = emoji.Path.replace(/^Assets[\\/]/, "").replace(/\\/g, "/").split('/');
-    let filename = parts.pop();
-    let dir = parts.join('/').toLowerCase();
-    const relativePath = `${dir}/${filename}`;
-    const imgUrl = `https://raw.githubusercontent.com/${ASSET_REPO}/${BRANCH}/${relativePath}`;
+    const imgUrl = getAssetUrl(emoji.Path);
 
     const wrapper = document.createElement("div");
     wrapper.className = "flex flex-col items-center cursor-pointer";
@@ -217,11 +223,7 @@ function showEmojiDetails(emoji) {
   let modal = document.getElementById(modalId);
   if (modal) modal.remove();
 
-  let parts = emoji.BigIcon.replace(/^Assets[\\/]/, "").replace(/\\/g, "/").split('/');
-  let filename = parts.pop();
-  let dir = parts.join('/').toLowerCase();
-  const relativePath = `${dir}/${filename}`;
-  const imgUrl = `https://raw.githubusercontent.com/${ASSET_REPO}/${BRANCH}/${relativePath}`;
+  const imgUrl = getAssetUrl(emoji.BigIcon);
   console.log(imgUrl);
 
   modal = document.createElement("div");
