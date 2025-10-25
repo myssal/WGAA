@@ -49,12 +49,10 @@ function showChapterGrid(group, chapters, mangaDetails) {
 /** Render Sidebar */
 export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, mangaDetails, emojis, storySprites) {
   const container = document.getElementById("categoryList");
-  console.log("renderSidebar executed, container:", container);
   container.innerHTML = "";
   container.className = "h-full overflow-y-auto pr-2 pl-4 space-y-2 text-gray-200";
 
   const createCollapsible = (title) => {
-    console.log("createCollapsible called for:", title);
     const div = document.createElement("div");
     div.className = "group-item border-b border-gray-700 pb-2";
 
@@ -82,7 +80,6 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
 
   /** CG Section */
   const cgSection = createCollapsible(t("cgSection"));
-  console.log("CG Groups:", cgGroups);
   cgGroups.sort((a,b)=>a.Order-b.Order).forEach(group => {
     const groupDiv = document.createElement("div");
     groupDiv.className = "pl-2 mb-1";
@@ -104,7 +101,6 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
 
   /** Manga Section */
   const mangaSection = createCollapsible(t("mangaSection"));
-  console.log("Manga Groups:", mangaGroups);
   mangaGroups.sort((a,b)=>a.Order-b.Order).forEach(group => {
     const groupDiv = document.createElement("div");
     groupDiv.className = "pl-2 mb-1";
@@ -127,7 +123,6 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
 
   /** Emoji Section */
   const emojiButtonDiv = document.createElement("div");
-  console.log("Emojis:", emojis);
   emojiButtonDiv.className = "group-item border-b border-gray-700 pb-2";
 
   const emojiButton = document.createElement("button");
@@ -142,7 +137,6 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
 
   /** Story Sprite Section */
   const storySpriteButtonDiv = document.createElement("div");
-  console.log("Story Sprites:", storySprites);
   storySpriteButtonDiv.className = "group-item border-b border-gray-700 pb-2";
 
   const storySpriteButton = document.createElement("button");
