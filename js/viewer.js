@@ -2,6 +2,33 @@
 import { ASSET_REPO, BRANCH, currentRegion } from "./config.js";
 import { t } from "./locale.js"; // your localization function
 
+function createPageInput(currentPage, totalPages, onPageChange) {
+    const container = document.createElement("div");
+    container.className = "flex items-center space-x-1 text-gray-300";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = currentPage;
+    input.className = "w-12 text-center bg-gray-800 border border-gray-600 rounded focus:ring focus:ring-blue-500";
+    input.onchange = (e) => {
+        let newPage = parseInt(e.target.value);
+        if (!isNaN(newPage) && newPage >= 1 && newPage <= totalPages) {
+            onPageChange(newPage);
+        } else {
+            e.target.value = currentPage; // Reset if invalid
+        }
+    };
+
+    const label = document.createElement("span");
+    label.textContent = `/ ${totalPages}`;
+
+    container.appendChild(input);
+    container.appendChild(label);
+
+    return container;
+}
+
+
 function getAssetUrl(path, options = { type: 'image' }) {
     if (!path) return "";
 
@@ -82,15 +109,11 @@ export function showThumbnailGrid(cgList, parentName = "", section = "CG", page 
     prevButton.textContent = t("prevButton");
     prevButton.className = "px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
     prevButton.disabled = page <= 1;
-    const pageIndicator = document.createElement("span");
-    pageIndicator.textContent = `${t("page")} ${page} / ${totalPages}`;
-    pageIndicator.className = "text-gray-300 cursor-pointer";
-    pageIndicator.onclick = () => {
-      const newPage = prompt(`${t("goToPage")} (1-${totalPages}):`, page);
-      if (newPage && !isNaN(newPage) && newPage >= 1 && newPage <= totalPages) {
-        showThumbnailGrid(cgList, parentName, section, parseInt(newPage));
-      }
-    };
+    prevButton.onclick = () => showThumbnailGrid(cgList, parentName, section, page - 1);
+
+    const pageInput = createPageInput(page, totalPages, (newPage) => {
+        showThumbnailGrid(cgList, parentName, section, newPage);
+    });
 
     const nextButton = document.createElement("button");
     nextButton.textContent = t("nextButton");
@@ -99,7 +122,7 @@ export function showThumbnailGrid(cgList, parentName = "", section = "CG", page 
     nextButton.onclick = () => showThumbnailGrid(cgList, parentName, section, page + 1);
 
     paginationDiv.appendChild(prevButton);
-    paginationDiv.appendChild(pageIndicator);
+    paginationDiv.appendChild(pageInput);
     paginationDiv.appendChild(nextButton);
     main.appendChild(paginationDiv);
   }
@@ -264,15 +287,11 @@ export function showEmojiGrid(emojis, page = 1) {
     prevButton.textContent = t("prevButton");
     prevButton.className = "px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
     prevButton.disabled = page <= 1;
-    const pageIndicator = document.createElement("span");
-    pageIndicator.textContent = `${t("page")} ${page} / ${totalPages}`;
-    pageIndicator.className = "text-gray-300 cursor-pointer";
-    pageIndicator.onclick = () => {
-      const newPage = prompt(`${t("goToPage")} (1-${totalPages}):`, page);
-      if (newPage && !isNaN(newPage) && newPage >= 1 && newPage <= totalPages) {
-        showEmojiGrid(emojis, parseInt(newPage));
-      }
-    };
+    prevButton.onclick = () => showEmojiGrid(emojis, page - 1);
+
+    const pageInput = createPageInput(page, totalPages, (newPage) => {
+        showEmojiGrid(emojis, newPage);
+    });
 
     const nextButton = document.createElement("button");
     nextButton.textContent = t("nextButton");
@@ -281,7 +300,7 @@ export function showEmojiGrid(emojis, page = 1) {
     nextButton.onclick = () => showEmojiGrid(emojis, page + 1);
 
     paginationDiv.appendChild(prevButton);
-    paginationDiv.appendChild(pageIndicator);
+    paginationDiv.appendChild(pageInput);
     paginationDiv.appendChild(nextButton);
     main.appendChild(paginationDiv);
   }
@@ -388,15 +407,9 @@ export function showStorySpriteGrid(storySprites, page = 1) {
     prevButton.disabled = page <= 1;
     prevButton.onclick = () => showStorySpriteGrid(storySprites, page - 1);
 
-    const pageIndicator = document.createElement("span");
-    pageIndicator.textContent = `${t("page")} ${page} / ${totalPages}`;
-    pageIndicator.className = "text-gray-300 cursor-pointer";
-    pageIndicator.onclick = () => {
-      const newPage = prompt(`${t("goToPage")} (1-${totalPages}):`, page);
-      if (newPage && !isNaN(newPage) && newPage >= 1 && newPage <= totalPages) {
-        showStorySpriteGrid(storySprites, parseInt(newPage));
-      }
-    };
+    const pageInput = createPageInput(page, totalPages, (newPage) => {
+        showStorySpriteGrid(storySprites, newPage);
+    });
 
     const nextButton = document.createElement("button");
     nextButton.textContent = t("nextButton");
@@ -405,7 +418,7 @@ export function showStorySpriteGrid(storySprites, page = 1) {
     nextButton.onclick = () => showStorySpriteGrid(storySprites, page + 1);
 
     paginationDiv.appendChild(prevButton);
-    paginationDiv.appendChild(pageIndicator);
+    paginationDiv.appendChild(pageInput);
     paginationDiv.appendChild(nextButton);
     main.appendChild(paginationDiv);
   }
