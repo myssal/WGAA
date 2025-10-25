@@ -227,9 +227,6 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG", pag
     showThumbnailGrid(parentList, parentName, section, page);
   });
 
-  if (prev) document.getElementById("prevBtn").addEventListener("click", () => showCG(prev, parentName, parentList, section, page));
-  if (next) document.getElementById("nextBtn").addEventListener("click", () => showCG(next, parentName, parentList, section, page));
-
   // Preload other images in the same group
   parentList.forEach(item => {
     if (item.Id !== cg.Id) {
@@ -240,12 +237,6 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG", pag
       }
     }
   });
-
-  // Keyboard support
-  document.onkeydown = (e) => {
-    if (e.key === "ArrowLeft" && prev) showCG(prev, parentName, parentList, section, page);
-    if (e.key === "ArrowRight" && next) showCG(next, parentName, parentList, section, page);
-  };
 }
 
 export function showEmojiGrid(emojis, page = 1) {
@@ -381,18 +372,6 @@ function showEmojiDetails(emoji, allEmojis, page = 1) {
   `;
 
   document.body.appendChild(modal);
-
-  const originalOnKeyDown = document.onkeydown;
-  document.onkeydown = (e) => {
-    if (e.key === "ArrowLeft" && prev) showEmojiDetails(prev, allEmojis, page);
-    if (e.key === "ArrowRight" && next) showEmojiDetails(next, allEmojis, page);
-  };
-
-  const closeModal = () => {
-    modal.remove();
-    document.onkeydown = originalOnKeyDown; // Restore original handler
-    showEmojiGrid(allEmojis, page);
-  };
 
   document.getElementById("close-emoji-modal").onclick = closeModal;
   modal.onclick = (e) => {
@@ -562,6 +541,13 @@ function showStorySpriteDetails(sprite, allSprites, page = 1, index = 0) {
   nextSpriteBtn.onclick = () => {
     if (nextSprite) {
       showStorySpriteDetails(nextSprite, allSprites, page, index + 1);
+    }
+  };
+
+  document.getElementById("close-story-sprite-modal").onclick = closeStorySpriteModal;
+  modal.onclick = (e) => {
+    if (e.target === modal) {
+      closeStorySpriteModal();
     }
   };
 }
