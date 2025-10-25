@@ -29,7 +29,7 @@ function createPageInput(currentPage, totalPages, onPageChange) {
 }
 
 
-function getAssetUrl(path, options = { type: 'image' }) {
+export function getAssetUrl(path, options = { type: 'image' }) {
     if (!path) return "";
 
     let relativePath = path.replace(/^Assets[\\/]/, "").replace(/\\/g, "/");
