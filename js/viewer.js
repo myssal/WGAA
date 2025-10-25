@@ -345,42 +345,64 @@ function showEmojiDetails(emoji, allEmojis, page = 1) {
   const main = document.getElementById("mainContent");
 
   const index = allEmojis.findIndex(item => item.Id === emoji.Id);
+  const prev = allEmojis[index - 1];
+  const next = allEmojis[index + 1];
 
   modal = document.createElement("div");
   modal.id = modalId;
   modal.className = "fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50";
   modal.innerHTML = `
-    <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md relative">
+    <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-lg relative">
       <button id="close-emoji-modal" class="absolute top-2 right-2 text-gray-400 hover:text-white">&times;</button>
-      <div class="flex justify-between items-center mb-4">
-        <button id="backBtn" class="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm">${t("backButton")}</button>
+      <div class="flex justify-center items-center mb-4">
         <span class="text-gray-200 font-bold">${t("emojiSection")} (${index + 1} / ${allEmojis.length})</span>
       </div>
-      <div class="flex">
-        <img src="${imgUrl}" alt="${emoji.ConnotationDesc}" class="w-24 h-24 object-contain rounded mr-8">
-        <div class="text-left">
-          <p class="font-bold">${emoji.ConnotationDesc}</p>
-          <p class="italic">${emoji.WorldDesc}</p>
-          <p>${emoji.Description}</p>
-        </div>
+      <button id="prevBtn" ${!prev ? "disabled" : ""} 
+              class="absolute left-0 top-1/2 -translate-y-1/2 text-3xl text-gray-300 hover:text-white disabled:opacity-30 z-10">
+        &#10094;
+      </button>
+
+      <div class="flex items-center justify-center">
+          <img src="${imgUrl}" alt="${emoji.ConnotationDesc}" class="w-24 h-24 object-contain rounded mr-8">
+          <div class="text-left">
+              <p class="font-bold">${emoji.ConnotationDesc}</p>
+              <p class="italic">${emoji.WorldDesc}</p>
+              <p>${emoji.Description}</p>
+          </div>
       </div>
+
+      <button id="nextBtn" ${!next ? "disabled" : ""}
+              class="absolute right-0 top-1/2 -translate-y-1/2 text-3xl text-gray-300 hover:text-white disabled:opacity-30 z-10">
+        &#10095;
+      </button>
+
       <p class="text-xs text-gray-500 mt-4 text-right">ID: ${emoji.Id}</p>
     </div>
   `;
 
   document.body.appendChild(modal);
 
-  document.getElementById("close-emoji-modal").onclick = () => modal.remove();
+  const originalOnKeyDown = document.onkeydown;
+  document.onkeydown = (e) => {
+    if (e.key === "ArrowLeft" && prev) showEmojiDetails(prev, allEmojis, page);
+    if (e.key === "ArrowRight" && next) showEmojiDetails(next, allEmojis, page);
+  };
+
+  const closeModal = () => {
+    modal.remove();
+    document.onkeydown = originalOnKeyDown; // Restore original handler
+    showEmojiGrid(allEmojis, page);
+  };
+
+  document.getElementById("close-emoji-modal").onclick = closeModal;
   modal.onclick = (e) => {
     if (e.target === modal) {
-      modal.remove();
+      closeModal();
     }
   };
 
-  document.getElementById("backBtn").addEventListener("click", () => {
-    modal.remove();
-    showEmojiGrid(allEmojis, page);
-  });
+  if (prev) document.getElementById("prevBtn").addEventListener("click", () => showEmojiDetails(prev, allEmojis, page));
+  if (next) document.getElementById("nextBtn").addEventListener("click", () => showEmojiDetails(next, allEmojis, page));
 }
 
 export function showStorySpriteGrid(storySprites, page = 1) {

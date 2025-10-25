@@ -49,8 +49,21 @@ function showChapterGrid(group, chapters, mangaDetails) {
 /** Render Sidebar */
 export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, mangaDetails, emojis, storySprites) {
   const container = document.getElementById("categoryList");
+  if (!container) {
+    console.error("Sidebar container #categoryList not found.");
+    return;
+  }
   container.innerHTML = "";
   container.className = "h-full overflow-y-auto pr-2 pl-4 space-y-2 text-gray-200";
+
+  // Ensure all data arrays are valid before proceeding
+  cgGroups = Array.isArray(cgGroups) ? cgGroups : [];
+  cgDetails = Array.isArray(cgDetails) ? cgDetails : [];
+  mangaGroups = Array.isArray(mangaGroups) ? mangaGroups : [];
+  mangaChapters = Array.isArray(mangaChapters) ? mangaChapters : [];
+  mangaDetails = Array.isArray(mangaDetails) ? mangaDetails : [];
+  emojis = Array.isArray(emojis) ? emojis : [];
+  storySprites = Array.isArray(storySprites) ? storySprites : [];
 
   const createCollapsible = (title) => {
     const div = document.createElement("div");
@@ -63,7 +76,7 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
     const content = document.createElement("div");
     content.className = "overflow-hidden transition-all duration-300";
 
-    let expanded = true;
+    let expanded = false
     const arrow = header.querySelector("[data-arrow]");
     const setExpanded = (state) => {
       expanded = state;
