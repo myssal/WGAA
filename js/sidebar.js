@@ -4,6 +4,7 @@ import { t } from "./locale.js";
 /** Render Sidebar */
 export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, mangaDetails, emojis, storySprites) {
   const container = document.getElementById("categoryList");
+  console.log("renderSidebar executed, container:", container);
   container.innerHTML = "";
   container.className = "h-full overflow-y-auto pr-2 pl-4 space-y-2 text-gray-200";
 
@@ -46,7 +47,7 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
     const groupDetails = cgDetails.filter(d => d.GroupId === group.Id).sort((a,b)=>a.Order-b.Order);
 
     groupHeader.addEventListener("click", () => {
-      if (groupDetails.length > 0) showThumbnailGrid(groupDetails, group.Name, "CG");
+      if (groupDetails.length > 0) showThumbnailGrid(groupDetails, group.Name, "CG", 1);
     });
 
     groupDiv.appendChild(groupHeader);
@@ -82,7 +83,7 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
       chapterHeader.addEventListener("click", () => {
         if (detailsList.length > 0) {
           const augmented = detailsList.map(d => ({ ...d, ChapterName: chap.Name }));
-          showThumbnailGrid(augmented, `${group.Name}/${chap.Name}`, "Manga");
+          showThumbnailGrid(augmented, `${group.Name}/${chap.Name}`, "Manga", 1);
         }
       });
 
@@ -106,7 +107,7 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
             .filter(d => d.ChapterId === chap.Id)
             .forEach(d => allCGs.push({ ...d, ChapterName: chap.Name }));
         });
-        if (allCGs.length > 0) showThumbnailGrid(allCGs, group.Name, "Manga");
+        if (allCGs.length > 0) showThumbnailGrid(allCGs, group.Name, "Manga", 1);
       }
     });
 
@@ -125,7 +126,7 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
   emojiButton.className = "w-full text-left flex justify-between items-center px-2 py-2 bg-gray-800 rounded hover:bg-gray-700 transition";
   emojiButton.innerHTML = `<span class="font-semibold">${t("emojiSection")}</span>`;
   emojiButton.addEventListener("click", () => {
-    showEmojiGrid(emojis);
+    showEmojiGrid(emojis, 1);
   });
 
   emojiButtonDiv.appendChild(emojiButton);
@@ -139,7 +140,7 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
   storySpriteButton.className = "w-full text-left flex justify-between items-center px-2 py-2 bg-gray-800 rounded hover:bg-gray-700 transition";
   storySpriteButton.innerHTML = `<span class="font-semibold">${t("storySpriteSection")}</span>`;
   storySpriteButton.addEventListener("click", () => {
-    showStorySpriteGrid(storySprites);
+    showStorySpriteGrid(storySprites, 1);
   });
 
   storySpriteButtonDiv.appendChild(storySpriteButton);

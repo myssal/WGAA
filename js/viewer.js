@@ -26,7 +26,7 @@ function getAssetUrl(path, options = { type: 'image' }) {
 }
 
 /** Thumbnail Grid Renderer */
-export function showThumbnailGrid(cgList, parentName = "", section = "CG") {
+export function showThumbnailGrid(cgList, parentName = "", section = "CG", page = 1) {
   const main = document.getElementById("mainContent");
   main.innerHTML = "";
 
@@ -37,55 +37,76 @@ export function showThumbnailGrid(cgList, parentName = "", section = "CG") {
     main.appendChild(pathDiv);
   }
 
-  const grouped = {};
-  cgList.forEach(cg => {
-    const key = cg.ChapterName || "All";
-    if (!grouped[key]) grouped[key] = [];
-    grouped[key].push(cg);
-  });
+  const pageSize = 16;
+  const start = (page - 1) * pageSize;
+  const end = start + pageSize;
+  const paginatedCGs = cgList.slice(start, end);
 
-  Object.keys(grouped).forEach(groupName => {
-    if (Object.keys(grouped).length > 1 && groupName !== "All") {
-      const title = document.createElement("h3");
-      title.textContent = groupName;
-      title.className = "text-lg font-bold text-gray-200 mt-4 mb-2";
-      main.appendChild(title);
+  const gridDiv = document.createElement("div");
+  gridDiv.className = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6";
+  main.appendChild(gridDiv);
+
+  paginatedCGs.forEach(cg => {
+    const thumbUrl = getAssetUrl(cg.Bg, { type: 'thumbnail' });
+    if (!thumbUrl) return;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "flex flex-col items-center";
+
+    const img = document.createElement("img");
+    img.src = thumbUrl;
+    img.alt = cg.Name;
+    img.className = "w-full h-40 object-cover rounded cursor-pointer hover:scale-105 transition";
+    img.loading = "lazy";
+    img.onclick = () => showCG(cg, parentName, cgList, section, page);
+
+    wrapper.appendChild(img);
+
+    if (section !== "Manga") {
+      const caption = document.createElement("p");
+      caption.textContent = cg.Name || parentName || t("unknown");
+      caption.className = "mt-1 text-sm text-gray-300 truncate text-center";
+      wrapper.appendChild(caption);
     }
 
-    const gridDiv = document.createElement("div");
-    gridDiv.className = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6";
-    main.appendChild(gridDiv);
-
-    grouped[groupName].forEach(cg => {
-      const thumbUrl = getAssetUrl(cg.Bg, { type: 'thumbnail' });
-      if (!thumbUrl) return;
-
-      const wrapper = document.createElement("div");
-      wrapper.className = "flex flex-col items-center";
-
-      const img = document.createElement("img");
-      img.src = thumbUrl;
-      img.alt = cg.Name;
-      img.className = "w-full h-40 object-cover rounded cursor-pointer hover:scale-105 transition";
-      img.loading = "lazy";
-      img.onclick = () => showCG(cg, parentName || groupName, cgList, section);
-
-      wrapper.appendChild(img);
-
-      if (section !== "Manga") {
-        const caption = document.createElement("p");
-        caption.textContent = cg.Name || groupName || t("unknown");
-        caption.className = "mt-1 text-sm text-gray-300 truncate text-center";
-        wrapper.appendChild(caption);
-      }
-
-      gridDiv.appendChild(wrapper);
-    });
+    gridDiv.appendChild(wrapper);
   });
+
+  // Pagination
+  const totalPages = Math.ceil(cgList.length / pageSize);
+  if (totalPages > 1) {
+    const paginationDiv = document.createElement("div");
+    paginationDiv.className = "flex justify-center items-center space-x-4 mt-4";
+
+    const prevButton = document.createElement("button");
+    prevButton.textContent = t("prevButton");
+    prevButton.className = "px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
+    prevButton.disabled = page <= 1;
+    const pageIndicator = document.createElement("span");
+    pageIndicator.textContent = `${t("page")} ${page} / ${totalPages}`;
+    pageIndicator.className = "text-gray-300 cursor-pointer";
+    pageIndicator.onclick = () => {
+      const newPage = prompt(`${t("goToPage")} (1-${totalPages}):`, page);
+      if (newPage && !isNaN(newPage) && newPage >= 1 && newPage <= totalPages) {
+        showThumbnailGrid(cgList, parentName, section, parseInt(newPage));
+      }
+    };
+
+    const nextButton = document.createElement("button");
+    nextButton.textContent = t("nextButton");
+    nextButton.className = "px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
+    nextButton.disabled = page >= totalPages;
+    nextButton.onclick = () => showThumbnailGrid(cgList, parentName, section, page + 1);
+
+    paginationDiv.appendChild(prevButton);
+    paginationDiv.appendChild(pageIndicator);
+    paginationDiv.appendChild(nextButton);
+    main.appendChild(paginationDiv);
+  }
 }
 
 /** Show individual CG with navigation */
-export function showCG(cg, parentName = "", parentList = [], section = "CG") {
+export function showCG(cg, parentName = "", parentList = [], section = "CG", page = 1) {
   const main = document.getElementById("mainContent");
   const categoryPath = parentName ? `${t(section)}/${parentName}` : t(section);
   const imgUrl = getAssetUrl(cg.Bg, { type: 'cg' });
@@ -100,7 +121,7 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
     <div class="max-w-5xl mx-auto text-center relative">
       <div class="flex justify-between items-center mb-4">
         <button id="backBtn" class="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm">${t("backButton")}</button>
-        <span class="text-gray-200 font-bold">${categoryPath}</span>
+        <span class="text-gray-200 font-bold">${categoryPath} (${index + 1} / ${parentList.length})</span>
       </div>
 
       ${section !== "Manga" ? `<h2 class="text-2xl font-bold mb-4">${cg.Name || parentName || t("unknown")}</h2>` : ""}
@@ -166,11 +187,11 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
 
   // Navigation buttons
   document.getElementById("backBtn").addEventListener("click", () => {
-    showThumbnailGrid(parentList, parentName, section);
+    showThumbnailGrid(parentList, parentName, section, page);
   });
 
-  if (prev) document.getElementById("prevBtn").addEventListener("click", () => showCG(prev, parentName, parentList, section));
-  if (next) document.getElementById("nextBtn").addEventListener("click", () => showCG(next, parentName, parentList, section));
+  if (prev) document.getElementById("prevBtn").addEventListener("click", () => showCG(prev, parentName, parentList, section, page));
+  if (next) document.getElementById("nextBtn").addEventListener("click", () => showCG(next, parentName, parentList, section, page));
 
   // Preload other images in the same group
   parentList.forEach(item => {
@@ -185,12 +206,12 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
 
   // Keyboard support
   document.onkeydown = (e) => {
-    if (e.key === "ArrowLeft" && prev) showCG(prev, parentName, parentList, section);
-    if (e.key === "ArrowRight" && next) showCG(next, parentName, parentList, section);
+    if (e.key === "ArrowLeft" && prev) showCG(prev, parentName, parentList, section, page);
+    if (e.key === "ArrowRight" && next) showCG(next, parentName, parentList, section, page);
   };
 }
 
-export function showEmojiGrid(emojis) {
+export function showEmojiGrid(emojis, page = 1) {
   const main = document.getElementById("mainContent");
   main.innerHTML = "";
 
@@ -203,14 +224,19 @@ export function showEmojiGrid(emojis) {
   gridDiv.className = "grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4 mb-6";
   main.appendChild(gridDiv);
 
-  emojis.sort((a,b) => a.Order - b.Order).forEach(emoji => {
+  const pageSize = 24;
+  const start = (page - 1) * pageSize;
+  const end = start + pageSize;
+  const paginatedEmojis = emojis.sort((a,b) => a.Order - b.Order).slice(start, end);
+
+  paginatedEmojis.forEach(emoji => {
     const imgUrl = getAssetUrl(emoji.Path);
 
     const wrapper = document.createElement("div");
     wrapper.className = "flex flex-col items-center cursor-pointer";
     wrapper.onclick = () => {
       console.log(imgUrl);
-      showEmojiDetails(emoji);
+      showEmojiDetails(emoji, emojis, page);
     };
 
     const img = document.createElement("img");
@@ -227,15 +253,51 @@ export function showEmojiGrid(emojis) {
     wrapper.appendChild(caption);
     gridDiv.appendChild(wrapper);
   });
+
+  // Pagination
+  const totalPages = Math.ceil(emojis.length / pageSize);
+  if (totalPages > 1) {
+    const paginationDiv = document.createElement("div");
+    paginationDiv.className = "flex justify-center items-center space-x-4 mt-4";
+
+    const prevButton = document.createElement("button");
+    prevButton.textContent = t("prevButton");
+    prevButton.className = "px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
+    prevButton.disabled = page <= 1;
+    const pageIndicator = document.createElement("span");
+    pageIndicator.textContent = `${t("page")} ${page} / ${totalPages}`;
+    pageIndicator.className = "text-gray-300 cursor-pointer";
+    pageIndicator.onclick = () => {
+      const newPage = prompt(`${t("goToPage")} (1-${totalPages}):`, page);
+      if (newPage && !isNaN(newPage) && newPage >= 1 && newPage <= totalPages) {
+        showEmojiGrid(emojis, parseInt(newPage));
+      }
+    };
+
+    const nextButton = document.createElement("button");
+    nextButton.textContent = t("nextButton");
+    nextButton.className = "px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
+    nextButton.disabled = page >= totalPages;
+    nextButton.onclick = () => showEmojiGrid(emojis, page + 1);
+
+    paginationDiv.appendChild(prevButton);
+    paginationDiv.appendChild(pageIndicator);
+    paginationDiv.appendChild(nextButton);
+    main.appendChild(paginationDiv);
+  }
 }
 
-function showEmojiDetails(emoji) {
+function showEmojiDetails(emoji, allEmojis, page = 1) {
   const modalId = "emoji-details-modal";
   let modal = document.getElementById(modalId);
   if (modal) modal.remove();
 
-  const imgUrl = getAssetUrl(emoji.BigIcon);
+  const imgUrl = getAssetUrl(emoji.Path);
   console.log(imgUrl);
+
+  const main = document.getElementById("mainContent");
+
+  const index = allEmojis.findIndex(item => item.Id === emoji.Id);
 
   modal = document.createElement("div");
   modal.id = modalId;
@@ -243,6 +305,10 @@ function showEmojiDetails(emoji) {
   modal.innerHTML = `
     <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md relative">
       <button id="close-emoji-modal" class="absolute top-2 right-2 text-gray-400 hover:text-white">&times;</button>
+      <div class="flex justify-between items-center mb-4">
+        <button id="backBtn" class="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm">${t("backButton")}</button>
+        <span class="text-gray-200 font-bold">${t("emojiSection")} (${index + 1} / ${allEmojis.length})</span>
+      </div>
       <div class="flex">
         <img src="${imgUrl}" alt="${emoji.ConnotationDesc}" class="w-24 h-24 object-contain rounded mr-8">
         <div class="text-left">
@@ -263,9 +329,14 @@ function showEmojiDetails(emoji) {
       modal.remove();
     }
   };
+
+  document.getElementById("backBtn").addEventListener("click", () => {
+    modal.remove();
+    showEmojiGrid(allEmojis, page);
+  });
 }
 
-export function showStorySpriteGrid(storySprites) {
+export function showStorySpriteGrid(storySprites, page = 1) {
   const main = document.getElementById("mainContent");
   main.innerHTML = "";
 
@@ -278,12 +349,17 @@ export function showStorySpriteGrid(storySprites) {
   gridDiv.className = "grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4 mb-6";
   main.appendChild(gridDiv);
 
-  storySprites.forEach(sprite => {
+  const pageSize = 18;
+  const start = (page - 1) * pageSize;
+  const end = start + pageSize;
+  const paginatedSprites = storySprites.slice(start, end);
+
+  paginatedSprites.forEach(sprite => {
     const imgUrl = getAssetUrl(sprite.RoleIcon);
 
     const wrapper = document.createElement("div");
     wrapper.className = "flex flex-col items-center cursor-pointer";
-    wrapper.onclick = () => showStorySpriteDetails(sprite, storySprites);
+    wrapper.onclick = () => showStorySpriteDetails(sprite, storySprites, page);
 
     const img = document.createElement("img");
     img.src = imgUrl;
@@ -299,9 +375,43 @@ export function showStorySpriteGrid(storySprites) {
     wrapper.appendChild(caption);
     gridDiv.appendChild(wrapper);
   });
+
+  // Pagination
+  const totalPages = Math.ceil(storySprites.length / pageSize);
+  if (totalPages > 1) {
+    const paginationDiv = document.createElement("div");
+    paginationDiv.className = "flex justify-center items-center space-x-4 mt-4";
+
+    const prevButton = document.createElement("button");
+    prevButton.textContent = t("prevButton");
+    prevButton.className = "px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
+    prevButton.disabled = page <= 1;
+    prevButton.onclick = () => showStorySpriteGrid(storySprites, page - 1);
+
+    const pageIndicator = document.createElement("span");
+    pageIndicator.textContent = `${t("page")} ${page} / ${totalPages}`;
+    pageIndicator.className = "text-gray-300 cursor-pointer";
+    pageIndicator.onclick = () => {
+      const newPage = prompt(`${t("goToPage")} (1-${totalPages}):`, page);
+      if (newPage && !isNaN(newPage) && newPage >= 1 && newPage <= totalPages) {
+        showStorySpriteGrid(storySprites, parseInt(newPage));
+      }
+    };
+
+    const nextButton = document.createElement("button");
+    nextButton.textContent = t("nextButton");
+    nextButton.className = "px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
+    nextButton.disabled = page >= totalPages;
+    nextButton.onclick = () => showStorySpriteGrid(storySprites, page + 1);
+
+    paginationDiv.appendChild(prevButton);
+    paginationDiv.appendChild(pageIndicator);
+    paginationDiv.appendChild(nextButton);
+    main.appendChild(paginationDiv);
+  }
 }
 
-function showStorySpriteDetails(sprite, allSprites) {
+function showStorySpriteDetails(sprite, allSprites, page = 1) {
   const main = document.getElementById("mainContent");
   main.innerHTML = "";
 
@@ -311,7 +421,7 @@ function showStorySpriteDetails(sprite, allSprites) {
     <div class="max-w-5xl mx-auto text-center relative">
       <div class="flex justify-between items-center mb-4">
         <button id="backBtn" class="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm">${t("backButton")}</button>
-        <span class="text-gray-200 font-bold">${t("storySpriteSection")}</span>
+        <span class="text-gray-200 font-bold">${t("storySpriteSection")} (${index + 1} / ${allSprites.length})</span>
       </div>
 
       <h2 class="text-2xl font-bold mb-4">${sprite.Name}</h2>
@@ -329,6 +439,6 @@ function showStorySpriteDetails(sprite, allSprites) {
   `;
 
   document.getElementById("backBtn").addEventListener("click", () => {
-    showStorySpriteGrid(allSprites);
+    showStorySpriteGrid(allSprites, page);
   });
 }
