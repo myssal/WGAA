@@ -2,7 +2,34 @@
 import { ASSET_REPO, BRANCH, currentRegion } from "./config.js";
 import { t } from "./locale.js"; // your localization function
 
-function getAssetUrl(path, options = { type: 'image' }) {
+function createPageInput(currentPage, totalPages, onPageChange) {
+    const container = document.createElement("div");
+    container.className = "flex items-center space-x-1 text-gray-300";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = currentPage;
+    input.className = "w-12 text-center bg-gray-800 border border-gray-600 rounded focus:ring focus:ring-blue-500";
+    input.onchange = (e) => {
+        let newPage = parseInt(e.target.value);
+        if (!isNaN(newPage) && newPage >= 1 && newPage <= totalPages) {
+            onPageChange(newPage);
+        } else {
+            e.target.value = currentPage; // Reset if invalid
+        }
+    };
+
+    const label = document.createElement("span");
+    label.textContent = `/ ${totalPages}`;
+
+    container.appendChild(input);
+    container.appendChild(label);
+
+    return { container, input, label };
+}
+
+
+export function getAssetUrl(path, options = { type: 'image' }) {
     if (!path) return "";
 
     let relativePath = path.replace(/^Assets[\\/]/, "").replace(/\\/g, "/");
@@ -26,7 +53,7 @@ function getAssetUrl(path, options = { type: 'image' }) {
 }
 
 /** Thumbnail Grid Renderer */
-export function showThumbnailGrid(cgList, parentName = "", section = "CG") {
+export function showThumbnailGrid(cgList, parentName = "", section = "CG", page = 1) {
   const main = document.getElementById("mainContent");
   main.innerHTML = "";
 
@@ -37,55 +64,86 @@ export function showThumbnailGrid(cgList, parentName = "", section = "CG") {
     main.appendChild(pathDiv);
   }
 
-  const grouped = {};
-  cgList.forEach(cg => {
-    const key = cg.ChapterName || "All";
-    if (!grouped[key]) grouped[key] = [];
-    grouped[key].push(cg);
-  });
+  const pageSize = 16;
+  const start = (page - 1) * pageSize;
+  const end = start + pageSize;
+  const paginatedCGs = cgList.slice(start, end);
 
-  Object.keys(grouped).forEach(groupName => {
-    if (Object.keys(grouped).length > 1 && groupName !== "All") {
-      const title = document.createElement("h3");
-      title.textContent = groupName;
-      title.className = "text-lg font-bold text-gray-200 mt-4 mb-2";
-      main.appendChild(title);
+  const gridDiv = document.createElement("div");
+  gridDiv.className = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6";
+  main.appendChild(gridDiv);
+
+  paginatedCGs.forEach(cg => {
+    const thumbUrl = getAssetUrl(cg.Bg, { type: 'thumbnail' });
+    if (!thumbUrl) return;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "flex flex-col items-center";
+
+    const img = document.createElement("img");
+    img.src = thumbUrl;
+    img.alt = cg.Name;
+    img.className = "w-full h-40 object-cover rounded cursor-pointer hover:scale-105 transition";
+    img.loading = "lazy";
+    img.onclick = () => showCG(cg, parentName, cgList, section, page);
+
+    wrapper.appendChild(img);
+
+    if (section !== "Manga") {
+      const caption = document.createElement("p");
+      caption.textContent = cg.Name || parentName || t("unknown");
+      caption.className = "mt-1 text-sm text-gray-300 truncate text-center";
+      wrapper.appendChild(caption);
     }
 
-    const gridDiv = document.createElement("div");
-    gridDiv.className = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6";
-    main.appendChild(gridDiv);
-
-    grouped[groupName].forEach(cg => {
-      const thumbUrl = getAssetUrl(cg.Bg, { type: 'thumbnail' });
-      if (!thumbUrl) return;
-
-      const wrapper = document.createElement("div");
-      wrapper.className = "flex flex-col items-center";
-
-      const img = document.createElement("img");
-      img.src = thumbUrl;
-      img.alt = cg.Name;
-      img.className = "w-full h-40 object-cover rounded cursor-pointer hover:scale-105 transition";
-      img.loading = "lazy";
-      img.onclick = () => showCG(cg, parentName || groupName, cgList, section);
-
-      wrapper.appendChild(img);
-
-      if (section !== "Manga") {
-        const caption = document.createElement("p");
-        caption.textContent = cg.Name || groupName || t("unknown");
-        caption.className = "mt-1 text-sm text-gray-300 truncate text-center";
-        wrapper.appendChild(caption);
-      }
-
-      gridDiv.appendChild(wrapper);
-    });
+    gridDiv.appendChild(wrapper);
   });
+
+  // Pagination
+  const totalPages = Math.ceil(cgList.length / pageSize);
+  if (totalPages > 1) {
+    const paginationDiv = document.createElement("div");
+    paginationDiv.className = "flex justify-center items-center space-x-4 mt-4";
+
+    const firstPageButton = document.createElement("button");
+    firstPageButton.textContent = "<<";
+    firstPageButton.className = "px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
+    firstPageButton.disabled = page <= 1;
+    firstPageButton.onclick = () => showThumbnailGrid(cgList, parentName, section, 1);
+
+    const prevButton = document.createElement("button");
+    prevButton.textContent = "<";
+    prevButton.className = "px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
+    prevButton.disabled = page <= 1;
+    prevButton.onclick = () => showThumbnailGrid(cgList, parentName, section, page - 1);
+
+    const pageInput = createPageInput(page, totalPages, (newPage) => {
+        showThumbnailGrid(cgList, parentName, section, newPage);
+    });
+
+    const nextButton = document.createElement("button");
+    nextButton.textContent = ">";
+    nextButton.className = "px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
+    nextButton.disabled = page >= totalPages;
+    nextButton.onclick = () => showThumbnailGrid(cgList, parentName, section, page + 1);
+
+    const lastPageButton = document.createElement("button");
+    lastPageButton.textContent = ">>";
+    lastPageButton.className = "px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
+    lastPageButton.disabled = page >= totalPages;
+    lastPageButton.onclick = () => showThumbnailGrid(cgList, parentName, section, totalPages);
+
+    paginationDiv.appendChild(firstPageButton);
+    paginationDiv.appendChild(prevButton);
+    paginationDiv.appendChild(pageInput.container);
+    paginationDiv.appendChild(nextButton);
+    paginationDiv.appendChild(lastPageButton);
+    main.appendChild(paginationDiv);
+  }
 }
 
 /** Show individual CG with navigation */
-export function showCG(cg, parentName = "", parentList = [], section = "CG") {
+export function showCG(cg, parentName = "", parentList = [], section = "CG", page = 1) {
   const main = document.getElementById("mainContent");
   const categoryPath = parentName ? `${t(section)}/${parentName}` : t(section);
   const imgUrl = getAssetUrl(cg.Bg, { type: 'cg' });
@@ -100,7 +158,7 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
     <div class="max-w-5xl mx-auto text-center relative">
       <div class="flex justify-between items-center mb-4">
         <button id="backBtn" class="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm">${t("backButton")}</button>
-        <span class="text-gray-200 font-bold">${categoryPath}</span>
+        <span class="text-gray-200 font-bold">${categoryPath} (${index + 1} / ${parentList.length})</span>
       </div>
 
       ${section !== "Manga" ? `<h2 class="text-2xl font-bold mb-4">${cg.Name || parentName || t("unknown")}</h2>` : ""}
@@ -166,11 +224,11 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
 
   // Navigation buttons
   document.getElementById("backBtn").addEventListener("click", () => {
-    showThumbnailGrid(parentList, parentName, section);
+    showThumbnailGrid(parentList, parentName, section, page);
   });
 
-  if (prev) document.getElementById("prevBtn").addEventListener("click", () => showCG(prev, parentName, parentList, section));
-  if (next) document.getElementById("nextBtn").addEventListener("click", () => showCG(next, parentName, parentList, section));
+  if (prev) document.getElementById("prevBtn").addEventListener("click", () => showCG(prev, parentName, parentList, section, page));
+  if (next) document.getElementById("nextBtn").addEventListener("click", () => showCG(next, parentName, parentList, section, page));
 
   // Preload other images in the same group
   parentList.forEach(item => {
@@ -185,12 +243,12 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG") {
 
   // Keyboard support
   document.onkeydown = (e) => {
-    if (e.key === "ArrowLeft" && prev) showCG(prev, parentName, parentList, section);
-    if (e.key === "ArrowRight" && next) showCG(next, parentName, parentList, section);
+    if (e.key === "ArrowLeft" && prev) showCG(prev, parentName, parentList, section, page);
+    if (e.key === "ArrowRight" && next) showCG(next, parentName, parentList, section, page);
   };
 }
 
-export function showEmojiGrid(emojis) {
+export function showEmojiGrid(emojis, page = 1) {
   const main = document.getElementById("mainContent");
   main.innerHTML = "";
 
@@ -203,14 +261,19 @@ export function showEmojiGrid(emojis) {
   gridDiv.className = "grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4 mb-6";
   main.appendChild(gridDiv);
 
-  emojis.sort((a,b) => a.Order - b.Order).forEach(emoji => {
+  const pageSize = 24;
+  const start = (page - 1) * pageSize;
+  const end = start + pageSize;
+  const paginatedEmojis = emojis.sort((a,b) => a.Order - b.Order).slice(start, end);
+
+  paginatedEmojis.forEach(emoji => {
     const imgUrl = getAssetUrl(emoji.Path);
 
     const wrapper = document.createElement("div");
     wrapper.className = "flex flex-col items-center cursor-pointer";
     wrapper.onclick = () => {
       console.log(imgUrl);
-      showEmojiDetails(emoji);
+      showEmojiDetails(emoji, emojis, page);
     };
 
     const img = document.createElement("img");
@@ -227,45 +290,122 @@ export function showEmojiGrid(emojis) {
     wrapper.appendChild(caption);
     gridDiv.appendChild(wrapper);
   });
+
+  // Pagination
+  const totalPages = Math.ceil(emojis.length / pageSize);
+  if (totalPages > 1) {
+    const paginationDiv = document.createElement("div");
+    paginationDiv.className = "flex justify-center items-center space-x-4 mt-4";
+
+    const firstPageButton = document.createElement("button");
+    firstPageButton.textContent = "<<";
+    firstPageButton.className = "px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
+    firstPageButton.disabled = page <= 1;
+    firstPageButton.onclick = () => showEmojiGrid(emojis, 1);
+
+    const prevButton = document.createElement("button");
+    prevButton.textContent = "<";
+    prevButton.className = "px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
+    prevButton.disabled = page <= 1;
+    prevButton.onclick = () => showEmojiGrid(emojis, page - 1);
+
+    const pageInput = createPageInput(page, totalPages, (newPage) => {
+        showEmojiGrid(emojis, newPage);
+    });
+
+    const nextButton = document.createElement("button");
+    nextButton.textContent = ">";
+    nextButton.className = "px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
+    nextButton.disabled = page >= totalPages;
+    nextButton.onclick = () => showEmojiGrid(emojis, page + 1);
+
+    const lastPageButton = document.createElement("button");
+    lastPageButton.textContent = ">>";
+    lastPageButton.className = "px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
+    lastPageButton.disabled = page >= totalPages;
+    lastPageButton.onclick = () => showEmojiGrid(emojis, totalPages);
+
+    paginationDiv.appendChild(firstPageButton);
+    paginationDiv.appendChild(prevButton);
+    paginationDiv.appendChild(pageInput.container);
+    paginationDiv.appendChild(nextButton);
+    paginationDiv.appendChild(lastPageButton);
+    main.appendChild(paginationDiv);
+  }
 }
 
-function showEmojiDetails(emoji) {
+function showEmojiDetails(emoji, allEmojis, page = 1) {
   const modalId = "emoji-details-modal";
   let modal = document.getElementById(modalId);
   if (modal) modal.remove();
 
-  const imgUrl = getAssetUrl(emoji.BigIcon);
+  const imgUrl = getAssetUrl(emoji.Path);
   console.log(imgUrl);
+
+  const main = document.getElementById("mainContent");
+
+  const index = allEmojis.findIndex(item => item.Id === emoji.Id);
+  const prev = allEmojis[index - 1];
+  const next = allEmojis[index + 1];
 
   modal = document.createElement("div");
   modal.id = modalId;
   modal.className = "fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50";
   modal.innerHTML = `
-    <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md relative">
+    <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-lg relative">
       <button id="close-emoji-modal" class="absolute top-2 right-2 text-gray-400 hover:text-white">&times;</button>
-      <div class="flex">
-        <img src="${imgUrl}" alt="${emoji.ConnotationDesc}" class="w-24 h-24 object-contain rounded mr-8">
-        <div class="text-left">
-          <p class="font-bold">${emoji.ConnotationDesc}</p>
-          <p class="italic">${emoji.WorldDesc}</p>
-          <p>${emoji.Description}</p>
-        </div>
+      <div class="flex justify-center items-center mb-4">
+        <span class="text-gray-200 font-bold">${t("emojiSection")} (${index + 1} / ${allEmojis.length})</span>
       </div>
+      <button id="prevBtn" ${!prev ? "disabled" : ""} 
+              class="absolute left-0 top-1/2 -translate-y-1/2 text-3xl text-gray-300 hover:text-white disabled:opacity-30 z-10">
+        &#10094;
+      </button>
+
+      <div class="flex items-center justify-center">
+          <img src="${imgUrl}" alt="${emoji.ConnotationDesc}" class="w-24 h-24 object-contain rounded mr-8">
+          <div class="text-left">
+              <p class="font-bold">${emoji.ConnotationDesc}</p>
+              <p class="italic">${emoji.WorldDesc}</p>
+              <p>${emoji.Description}</p>
+          </div>
+      </div>
+
+      <button id="nextBtn" ${!next ? "disabled" : ""}
+              class="absolute right-0 top-1/2 -translate-y-1/2 text-3xl text-gray-300 hover:text-white disabled:opacity-30 z-10">
+        &#10095;
+      </button>
+
       <p class="text-xs text-gray-500 mt-4 text-right">ID: ${emoji.Id}</p>
     </div>
   `;
 
   document.body.appendChild(modal);
 
-  document.getElementById("close-emoji-modal").onclick = () => modal.remove();
+  const originalOnKeyDown = document.onkeydown;
+  document.onkeydown = (e) => {
+    if (e.key === "ArrowLeft" && prev) showEmojiDetails(prev, allEmojis, page);
+    if (e.key === "ArrowRight" && next) showEmojiDetails(next, allEmojis, page);
+  };
+
+  const closeModal = () => {
+    modal.remove();
+    document.onkeydown = originalOnKeyDown; // Restore original handler
+    showEmojiGrid(allEmojis, page);
+  };
+
+  document.getElementById("close-emoji-modal").onclick = closeModal;
   modal.onclick = (e) => {
     if (e.target === modal) {
-      modal.remove();
+      closeModal();
     }
   };
+
+  if (prev) document.getElementById("prevBtn").addEventListener("click", () => showEmojiDetails(prev, allEmojis, page));
+  if (next) document.getElementById("nextBtn").addEventListener("click", () => showEmojiDetails(next, allEmojis, page));
 }
 
-export function showStorySpriteGrid(storySprites) {
+export function showStorySpriteGrid(storySprites, page = 1) {
   const main = document.getElementById("mainContent");
   main.innerHTML = "";
 
@@ -278,13 +418,17 @@ export function showStorySpriteGrid(storySprites) {
   gridDiv.className = "grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4 mb-6";
   main.appendChild(gridDiv);
 
-  storySprites.forEach(sprite => {
-    const imgUrl = getAssetUrl(sprite.RoleIcon);
-
-    const wrapper = document.createElement("div");
-    wrapper.className = "flex flex-col items-center cursor-pointer";
-    wrapper.onclick = () => showStorySpriteDetails(sprite, storySprites);
-
+  const pageSize = 18;
+  const start = (page - 1) * pageSize;
+  const end = start + pageSize;
+      const paginatedSprites = storySprites.slice(start, end);
+  
+    paginatedSprites.forEach((sprite, index) => {
+      const imgUrl = getAssetUrl(sprite.RoleIcon);
+  
+      const wrapper = document.createElement("div");
+      wrapper.className = "flex flex-col items-center cursor-pointer";
+      wrapper.onclick = () => showStorySpriteDetails(sprite, storySprites, page, start + index);
     const img = document.createElement("img");
     img.src = imgUrl;
     img.alt = sprite.Name;
@@ -299,36 +443,125 @@ export function showStorySpriteGrid(storySprites) {
     wrapper.appendChild(caption);
     gridDiv.appendChild(wrapper);
   });
+
+  // Pagination
+  const totalPages = Math.ceil(storySprites.length / pageSize);
+  if (totalPages > 1) {
+    const paginationDiv = document.createElement("div");
+    paginationDiv.className = "flex justify-center items-center space-x-4 mt-4";
+
+    const firstPageButton = document.createElement("button");
+    firstPageButton.textContent = "<<";
+    firstPageButton.className = "px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
+    firstPageButton.disabled = page <= 1;
+    firstPageButton.onclick = () => showStorySpriteGrid(storySprites, 1);
+
+    const prevButton = document.createElement("button");
+    prevButton.textContent = "<";
+    prevButton.className = "px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
+    prevButton.disabled = page <= 1;
+    prevButton.onclick = () => showStorySpriteGrid(storySprites, page - 1);
+
+    const pageInput = createPageInput(page, totalPages, (newPage) => {
+        showStorySpriteGrid(storySprites, newPage);
+    });
+
+    const nextButton = document.createElement("button");
+    nextButton.textContent = ">";
+    nextButton.className = "px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
+    nextButton.disabled = page >= totalPages;
+    nextButton.onclick = () => showStorySpriteGrid(storySprites, page + 1);
+
+    const lastPageButton = document.createElement("button");
+    lastPageButton.textContent = ">>";
+    lastPageButton.className = "px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
+    lastPageButton.disabled = page >= totalPages;
+    lastPageButton.onclick = () => showStorySpriteGrid(storySprites, totalPages);
+
+    paginationDiv.appendChild(firstPageButton);
+    paginationDiv.appendChild(prevButton);
+    paginationDiv.appendChild(pageInput.container);
+    paginationDiv.appendChild(nextButton);
+    paginationDiv.appendChild(lastPageButton);
+    main.appendChild(paginationDiv);
+  }
 }
 
-function showStorySpriteDetails(sprite, allSprites) {
-  const main = document.getElementById("mainContent");
-  main.innerHTML = "";
+function showStorySpriteDetails(sprite, allSprites, page = 1, index = 0) {
+  const modalId = "story-sprite-details-modal";
+  let modal = document.getElementById(modalId);
 
   const imgUrl = getAssetUrl(sprite.RoleIcon);
 
-  main.innerHTML = `
-    <div class="max-w-5xl mx-auto text-center relative">
-      <div class="flex justify-between items-center mb-4">
-        <button id="backBtn" class="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm">${t("backButton")}</button>
-        <span class="text-gray-200 font-bold">${t("storySpriteSection")}</span>
+  if (!modal) {
+    // Create modal if it doesn't exist
+    modal = document.createElement("div");
+    modal.id = modalId;
+    modal.className = "fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50";
+    modal.innerHTML = `
+      <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-2xl relative flex flex-col items-center">
+        <button id="close-story-sprite-modal" class="absolute top-2 right-2 text-gray-400 hover:text-white">&times;</button>
+        <h2 id="spriteModalTitle" class="text-gray-200 font-bold mb-4"></h2>
+        <div class="sprite-canvas">
+          <!-- Navigation arrows -->
+          <button id="prevSpriteBtn" class="absolute left-0 top-1/2 -translate-y-1/2 text-3xl text-gray-300 hover:text-white disabled:opacity-30 z-10">
+            &#10094;
+          </button>
+          <img id="detailSpriteImage" src="" alt="" class="max-w-full max-h-full object-contain rounded cursor-pointer">
+          <button id="nextSpriteBtn" class="absolute right-0 top-1/2 -translate-y-1/2 text-3xl text-gray-300 hover:text-white disabled:opacity-30 z-10">
+            &#10095;
+          </button>
+        </div>
+        <p id="spriteModalName" class="font-bold text-lg mt-4"></p>
+        <p id="spriteModalId" class="text-xs text-gray-500 mt-2"></p>
       </div>
+    `;
+    document.body.appendChild(modal);
 
-      <h2 class="text-2xl font-bold mb-4">${sprite.Name}</h2>
+    // Event listeners for the modal itself (only once)
+    document.getElementById("close-story-sprite-modal").onclick = () => modal.remove();
+    modal.onclick = (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    };
 
-      <div class="relative rounded-lg overflow-hidden shadow-lg bg-gray-800 flex items-center justify-center"
-           style="width:100%; max-width:90%; margin: 0 auto;">
-        
-        <img id="spriteImage" src="${imgUrl}" alt="${sprite.Name}"
-             class="object-contain transition-opacity duration-500 opacity-100">
+    // Image pop-up listener
+    document.getElementById("detailSpriteImage").addEventListener("click", () => {
+      const imageModal = document.getElementById("imageModal");
+      const modalImage = document.getElementById("modalImage");
+      modalImage.src = document.getElementById("detailSpriteImage").src;
+      imageModal.classList.add("fixed-size-modal");
+      imageModal.classList.remove("hidden");
+    });
+  }
 
-      </div>
+  // Update content of the existing modal
+  document.getElementById("spriteModalTitle").textContent = `${t("storySpriteSection")} (${index + 1} / ${allSprites.length})`;
+  document.getElementById("detailSpriteImage").src = imgUrl;
+  document.getElementById("detailSpriteImage").alt = sprite.Name;
+  document.getElementById("spriteModalName").textContent = sprite.Name;
+  document.getElementById("spriteModalId").textContent = `ID: ${sprite.RoleId}`;
 
-      <p class="text-gray-500 text-sm mt-2">${t("idLabel")}: ${sprite.RoleId}</p>
-    </div>
-  `;
+  const prevSprite = allSprites[index - 1];
+  const nextSprite = allSprites[index + 1];
 
-  document.getElementById("backBtn").addEventListener("click", () => {
-    showStorySpriteGrid(allSprites);
-  });
+  const prevSpriteBtn = document.getElementById("prevSpriteBtn");
+  const nextSpriteBtn = document.getElementById("nextSpriteBtn");
+
+  prevSpriteBtn.disabled = !prevSprite;
+  nextSpriteBtn.disabled = !nextSprite;
+
+  // Update navigation button handlers to call showStorySpriteDetails with new sprite and index
+  prevSpriteBtn.onclick = () => {
+    if (prevSprite) {
+      showStorySpriteDetails(prevSprite, allSprites, page, index - 1);
+    }
+  };
+
+  nextSpriteBtn.onclick = () => {
+    if (nextSprite) {
+      showStorySpriteDetails(nextSprite, allSprites, page, index + 1);
+    }
+  };
 }

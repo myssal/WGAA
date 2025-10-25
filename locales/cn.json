@@ -6,5 +6,9 @@
   "storySpriteSection": "故事精靈",
   "backButton": "← 返回",
   "idLabel": "編號",
-  "loading": "加載中..."
+  "loading": "加載中...",
+  "prevButton": "上一頁",
+  "nextButton": "下一頁",
+  "page": "頁",
+  "goToPage": "跳轉到頁面"
 }

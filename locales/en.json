@@ -6,5 +6,9 @@
   "storySpriteSection": "Story Sprite",
   "backButton": "← Back",
   "idLabel": "ID",
-  "loading": "Loading..."
+  "loading": "Loading...",
+  "prevButton": "Prev",
+  "nextButton": "Next",
+  "page": "Page",
+  "goToPage": "Go to page"
 }
