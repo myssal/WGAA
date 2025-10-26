@@ -1,7 +1,7 @@
 import { t } from "./locale.js";
 
 /** Render Sidebar */
-export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, mangaDetails, emojis, storySprites) {
+export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, mangaDetails, emojis, emojiPacks, storySprites) {
   const container = document.getElementById("categoryList");
   if (!container) {
     console.error("Sidebar container #categoryList not found.");
@@ -17,6 +17,7 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
   mangaChapters = Array.isArray(mangaChapters) ? mangaChapters : [];
   mangaDetails = Array.isArray(mangaDetails) ? mangaDetails : [];
   emojis = Array.isArray(emojis) ? emojis : [];
+  emojiPacks = Array.isArray(emojiPacks) ? emojiPacks : [];
   storySprites = Array.isArray(storySprites) ? storySprites : [];
 
   const createCollapsible = (title) => {
@@ -85,18 +86,26 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
   container.appendChild(mangaSection.div);
 
   /** Emoji Section */
-  const emojiButtonDiv = document.createElement("div");
-  emojiButtonDiv.className = "group-item border-b border-gray-700 pb-2";
+  const emojiSection = createCollapsible(t("emojiSection"));
+  const allowedPacks = ["Default Stamp", "Event Stamp", "Achievement Stamp"];
+  const filteredPacks = emojiPacks.filter(p => allowedPacks.includes(p.Name));
 
-  const emojiButton = document.createElement("button");
-  emojiButton.className = "w-full text-left flex justify-between items-center px-2 py-2 bg-gray-800 rounded hover:bg-gray-700 transition";
-  emojiButton.innerHTML = `<span class="font-semibold">${t("emojiSection")}</span>`;
-  emojiButton.addEventListener("click", () => {
-    location.hash = "#/emoji";
+  filteredPacks.sort((a,b)=>a.Order-b.Order).forEach(pack => {
+    const packDiv = document.createElement("div");
+    packDiv.className = "pl-2 mb-1";
+
+    const packHeader = document.createElement("button");
+    packHeader.className = "w-full text-left px-3 py-1 rounded hover:bg-gray-700 transition text-sm font-semibold";
+    packHeader.textContent = pack.Name.replace("Stamp", "Emoji");
+
+    packHeader.addEventListener("click", () => {
+      location.hash = `#/emoji/${pack.Id}`;
+    });
+
+    packDiv.appendChild(packHeader);
+    emojiSection.content.appendChild(packDiv);
   });
-
-  emojiButtonDiv.appendChild(emojiButton);
-  container.appendChild(emojiButtonDiv);
+  container.appendChild(emojiSection.div);
 
   /** Story Sprite Section */
   const storySpriteButtonDiv = document.createElement("div");

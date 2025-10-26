@@ -308,7 +308,8 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG", pag
   });
 }
 
-export function showEmojiGrid(emojis, page = 1) {
+export function showEmojiGrid(emojis, page = 1, packId = 'all') {
+  const filteredEmojis = emojis.filter(e => e.Id !== 11700001);
   const main = document.getElementById("mainContent");
   main.innerHTML = "";
 
@@ -324,7 +325,7 @@ export function showEmojiGrid(emojis, page = 1) {
   const pageSize = 24;
   const start = (page - 1) * pageSize;
   const end = start + pageSize;
-  const paginatedEmojis = emojis.sort((a,b) => a.Order - b.Order).slice(start, end);
+  const paginatedEmojis = filteredEmojis.sort((a,b) => a.Order - b.Order).slice(start, end);
 
   paginatedEmojis.forEach(emoji => {
     const imgUrl = getAssetUrl(emoji.Path);
@@ -332,7 +333,7 @@ export function showEmojiGrid(emojis, page = 1) {
     const wrapper = document.createElement("div");
     wrapper.className = "flex flex-col items-center cursor-pointer";
     wrapper.onclick = () => {
-      location.hash = `#/emoji/${emoji.Id}`;
+      location.hash = `#/emoji/${packId}/${emoji.Id}`;
     };
 
     const img = document.createElement("img");
@@ -351,7 +352,7 @@ export function showEmojiGrid(emojis, page = 1) {
   });
 
   // Pagination
-  const totalPages = Math.ceil(emojis.length / pageSize);
+  const totalPages = Math.ceil(filteredEmojis.length / pageSize);
   if (totalPages > 1) {
     const paginationDiv = document.createElement("div");
     paginationDiv.className = "flex justify-center items-center space-x-4 mt-4";
@@ -360,29 +361,29 @@ export function showEmojiGrid(emojis, page = 1) {
     firstPageButton.textContent = "<<";
     firstPageButton.className = "px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
     firstPageButton.disabled = page <= 1;
-    firstPageButton.onclick = () => showEmojiGrid(emojis, 1);
+    firstPageButton.onclick = () => showEmojiGrid(emojis, 1, packId);
 
     const prevButton = document.createElement("button");
     prevButton.textContent = "<";
     prevButton.className = "px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
     prevButton.disabled = page <= 1;
-    prevButton.onclick = () => showEmojiGrid(emojis, page - 1);
+    prevButton.onclick = () => showEmojiGrid(emojis, page - 1, packId);
 
     const pageInput = createPageInput(page, totalPages, (newPage) => {
-        showEmojiGrid(emojis, newPage);
+        showEmojiGrid(emojis, newPage, packId);
     });
 
     const nextButton = document.createElement("button");
     nextButton.textContent = ">";
     nextButton.className = "px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
     nextButton.disabled = page >= totalPages;
-    nextButton.onclick = () => showEmojiGrid(emojis, page + 1);
+    nextButton.onclick = () => showEmojiGrid(emojis, page + 1, packId);
 
     const lastPageButton = document.createElement("button");
     lastPageButton.textContent = ">>";
     lastPageButton.className = "px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
     lastPageButton.disabled = page >= totalPages;
-    lastPageButton.onclick = () => showEmojiGrid(emojis, totalPages);
+    lastPageButton.onclick = () => showEmojiGrid(emojis, totalPages, packId);
 
     paginationDiv.appendChild(firstPageButton);
     paginationDiv.appendChild(prevButton);
@@ -395,7 +396,7 @@ export function showEmojiGrid(emojis, page = 1) {
 
 
 
-export function showEmojiDetails(emoji, allEmojis, page = 1) {
+export function showEmojiDetails(emoji, allEmojis, page = 1, packId = 'all') {
   const modalId = "emoji-details-modal";
   let modal = document.getElementById(modalId);
   if (modal) modal.remove();
@@ -405,7 +406,7 @@ export function showEmojiDetails(emoji, allEmojis, page = 1) {
     if (modal) {
       modal.remove();
     }
-    location.hash = `#/emoji`;
+    location.hash = packId === 'all' ? '#/emoji' : `#/emoji/${packId}`;
   }
 
   const imgUrl = getAssetUrl(emoji.Path);
@@ -458,8 +459,8 @@ export function showEmojiDetails(emoji, allEmojis, page = 1) {
     }
   };
 
-  if (prev) document.getElementById("prevBtn").addEventListener("click", () => location.hash = `#/emoji/${prev.Id}`);
-  if (next) document.getElementById("nextBtn").addEventListener("click", () => location.hash = `#/emoji/${next.Id}`);
+  if (prev) document.getElementById("prevBtn").addEventListener("click", () => location.hash = `#/emoji/${packId}/${prev.Id}`);
+  if (next) document.getElementById("nextBtn").addEventListener("click", () => location.hash = `#/emoji/${packId}/${next.Id}`);
 }
 
 export function showStorySpriteGrid(storySprites, page = 1) {

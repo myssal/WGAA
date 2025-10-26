@@ -1,6 +1,6 @@
 
 import { showThumbnailGrid, showEmojiGrid, showStorySpriteGrid, showCG, showChapterGrid, showEmojiDetails, showStorySpriteDetails } from "./viewer.js";
-import { groups, details, mangaGroups, mangaChapters, mangaDetails, emojis, storySprites } from "./main.js";
+import { groups, details, mangaGroups, mangaChapters, mangaDetails, emojis, emojiPacks, storySprites } from "./main.js";
 import { t } from "./locale.js";
 
 const routes = {
@@ -55,20 +55,40 @@ const routes = {
         }
     },
     "/emoji": () => {
-        showEmojiGrid(emojis, 1);
+        document.getElementById("mainContent").innerHTML = "";
     },
-    "/story-sprite": () => {
-        showStorySpriteGrid(storySprites, 1);
+    "/emoji/:packId": (packId) => {
+        const id = parseInt(packId);
+        const pack = emojiPacks.find(p => p.Id === id);
+        if (pack) {
+            let filteredEmojis;
+            if (pack.Id === 0) {
+                filteredEmojis = emojis.filter(e => !e.PackageId);
+            } else {
+                filteredEmojis = emojis.filter(e => e.PackageId === pack.Id);
+            }
+            showEmojiGrid(filteredEmojis, 1, id);
+        }
     },
-    "/emoji/:emojiId": (emojiId) => {
+    "/emoji/:packId/:emojiId": (packId, emojiId) => {
+        const id = parseInt(packId);
+        const pack = emojiPacks.find(p => p.Id === id);
         const emoji = emojis.find(e => e.Id === parseInt(emojiId));
-        if (emoji) {
-            const pageSize = 24; // from showEmojiGrid
-            const sortedEmojis = emojis.sort((a,b) => a.Order - b.Order);
+        if (emoji && pack) {
+            let emojiList;
+            if (pack.Id === 0) {
+                emojiList = emojis.filter(e => !e.PackageId);
+            } else {
+                emojiList = emojis.filter(e => e.PackageId === pack.Id);
+            }
+            
+            const pageSize = 24;
+            const sortedEmojis = emojiList.sort((a,b) => a.Order - b.Order);
             const index = sortedEmojis.findIndex(e => e.Id === emoji.Id);
             const page = Math.ceil((index + 1) / pageSize);
-            showEmojiGrid(emojis, page);
-            showEmojiDetails(emoji, emojis, page);
+
+            showEmojiGrid(emojiList, page, id);
+            showEmojiDetails(emoji, emojiList, page, id);
         }
     },
     "/story-sprite/:spriteId": (spriteId) => {
