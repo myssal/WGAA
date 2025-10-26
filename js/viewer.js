@@ -509,8 +509,35 @@ export function showEmojiDetails(emoji, allEmojis, page = 1, packId = 'all') {
     }
   };
 
-  if (prev) document.getElementById("prevBtn").addEventListener("click", () => location.hash = `#/emoji/${packId}/${prev.Id}`);
-  if (next) document.getElementById("nextBtn").addEventListener("click", () => location.hash = `#/emoji/${packId}/${next.Id}`);
+  const pageSize = 24; // Consistent with showEmojiGrid
+  const sortedEmojis = allEmojis.sort((a,b) => a.Order - b.Order); // Ensure sorted list for index calculation
+
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+
+  prevBtn.disabled = !prev;
+  nextBtn.disabled = !next;
+
+  // Remove existing listeners to prevent multiple calls
+  prevBtn.onclick = null;
+  nextBtn.onclick = null;
+
+  if (prev) {
+    prevBtn.onclick = () => {
+      const prevIndex = sortedEmojis.findIndex(item => item.Id === prev.Id);
+      const prevPage = Math.ceil((prevIndex + 1) / pageSize);
+      showEmojiDetails(prev, allEmojis, prevPage, packId); // Update modal content
+      showEmojiGrid(allEmojis, prevPage, packId); // Update background grid
+    };
+  }
+  if (next) {
+    nextBtn.onclick = () => {
+      const nextIndex = sortedEmojis.findIndex(item => item.Id === next.Id);
+      const nextPage = Math.ceil((nextIndex + 1) / pageSize);
+      showEmojiDetails(next, allEmojis, nextPage, packId); // Update modal content
+      showEmojiGrid(allEmojis, nextPage, packId); // Update background grid
+    };
+  }
 }
 
 export function showStorySpriteGrid(storySprites, page = 1) {
@@ -669,17 +696,29 @@ export function showStorySpriteDetails(sprite, allSprites, page = 1, index = 0) 
   nextSpriteBtn.disabled = !nextSprite;
 
   // Update navigation button handlers to call showStorySpriteDetails with new sprite and index
-  prevSpriteBtn.onclick = () => {
-    if (prevSprite) {
-      location.hash = `#/story-sprite/${prevSprite.RoleId}`;
-    }
-  };
+  const pageSize = 18; // Consistent with showStorySpriteGrid
 
-  nextSpriteBtn.onclick = () => {
-    if (nextSprite) {
-      location.hash = `#/story-sprite/${nextSprite.RoleId}`;
-    }
-  };
+  // Remove existing listeners to prevent multiple calls
+  prevSpriteBtn.onclick = null;
+  nextSpriteBtn.onclick = null;
+
+  if (prevSprite) {
+    prevSpriteBtn.onclick = () => {
+      const prevSpriteIndex = allSprites.findIndex(item => item.RoleId === prevSprite.RoleId);
+      const prevSpritePage = Math.ceil((prevSpriteIndex + 1) / pageSize);
+      showStorySpriteDetails(prevSprite, allSprites, prevSpritePage, prevSpriteIndex); // Update modal content
+      showStorySpriteGrid(allSprites, prevSpritePage); // Update background grid
+    };
+  }
+
+  if (nextSprite) {
+    nextSpriteBtn.onclick = () => {
+      const nextSpriteIndex = allSprites.findIndex(item => item.RoleId === nextSprite.RoleId);
+      const nextSpritePage = Math.ceil((nextSpriteIndex + 1) / pageSize);
+      showStorySpriteDetails(nextSprite, allSprites, nextSpritePage, nextSpriteIndex); // Update modal content
+      showStorySpriteGrid(allSprites, nextSpritePage); // Update background grid
+    };
+  }
 
   document.getElementById("close-story-sprite-modal").onclick = closeStorySpriteModal;
   modal.onclick = (e) => {
