@@ -1,6 +1,6 @@
 
-import { showThumbnailGrid, showEmojiGrid, showStorySpriteGrid, showCG, showChapterGrid, showEmojiDetails, showStorySpriteDetails } from "./viewer.js";
-import { groups, details, mangaGroups, mangaChapters, mangaDetails, emojis, emojiPacks, storySprites } from "./main.js";
+import { showThumbnailGrid, showEmojiGrid, showStorySpriteGrid, showCG, showChapterGrid, showEmojiDetails, showStorySpriteDetails, showMemoryGrid } from "./viewer.js";
+import { groups, details, mangaGroups, mangaChapters, mangaDetails, emojis, emojiPacks, storySprites, equips, equipRes, equipSuits, awarenessSettings } from "./main.js";
 import { t } from "./locale.js";
 
 const routes = {
@@ -105,6 +105,9 @@ const routes = {
             showStorySpriteGrid(storySprites, page);
             showStorySpriteDetails(sprite, storySprites, page, index);
         }
+    },
+    "/memory": () => {
+        showMemoryGrid(equipSuits, equipRes);
     }
 };
 

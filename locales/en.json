@@ -10,5 +10,8 @@
   "prevButton": "Prev",
   "nextButton": "Next",
   "page": "Page",
-  "goToPage": "Go to page"
+  "goToPage": "Go to page",
+  "memorySection": "Memory",
+  "searchByName": "Search by Name",
+  "allMemories": "All Memories"
 }
