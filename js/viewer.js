@@ -52,6 +52,51 @@ export function getAssetUrl(path, options = { type: 'image' }) {
     return `https://raw.githubusercontent.com/${ASSET_REPO}/${BRANCH}/${finalPath}`;
 }
 
+
+export function showChapterGrid(group, chapters, mangaDetails) {
+  const main = document.getElementById("mainContent");
+  main.innerHTML = "";
+
+  const pathDiv = document.createElement("div");
+  pathDiv.className = "flex justify-between items-center mb-4";
+  pathDiv.innerHTML = `<span class="text-gray-200 font-bold">${t("mangaSection")}/${group.Name}</span>`;
+  main.appendChild(pathDiv);
+
+  const gridDiv = document.createElement("div");
+  gridDiv.className = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6";
+  main.appendChild(gridDiv);
+
+  chapters.forEach(chap => {
+    const detailsList = mangaDetails.filter(d => d.ChapterId === chap.Id);
+    let thumbUrl = '';
+    if (detailsList.length > 0) {
+      thumbUrl = getAssetUrl(detailsList[0].Bg, { type: 'thumbnail' });
+    }
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "flex flex-col items-center cursor-pointer";
+    wrapper.onclick = () => {
+      if (detailsList.length > 0) {
+        location.hash = `#/manga/${encodeURIComponent(group.Name)}/${encodeURIComponent(chap.Name)}`;
+      }
+    };
+
+    const img = document.createElement("img");
+    img.src = thumbUrl || 'https://via.placeholder.com/150?text=No+Image'; // Placeholder if no image
+    img.alt = chap.Name;
+    img.className = "w-full h-40 object-cover rounded hover:scale-105 transition";
+    img.loading = "lazy";
+
+    const caption = document.createElement("p");
+    caption.textContent = chap.Name;
+    caption.className = "mt-1 text-sm text-gray-300 truncate text-center";
+
+    wrapper.appendChild(img);
+    wrapper.appendChild(caption);
+    gridDiv.appendChild(wrapper);
+  });
+}
+
 /** Thumbnail Grid Renderer */
 export function showThumbnailGrid(cgList, parentName = "", section = "CG", page = 1) {
   const main = document.getElementById("mainContent");
@@ -144,6 +189,12 @@ export function showThumbnailGrid(cgList, parentName = "", section = "CG", page 
 
 /** Show individual CG with navigation */
 export function showCG(cg, parentName = "", parentList = [], section = "CG", page = 1) {
+  if (section === "CG") {
+    history.replaceState(null, null, `#/cg/${encodeURIComponent(parentName)}/${cg.Id}`);
+  } else if (section === "Manga") {
+    history.replaceState(null, null, `#/manga/${encodeURIComponent(parentName)}/${cg.Id}`);
+  }
+
   const main = document.getElementById("mainContent");
   const categoryPath = parentName ? `${t(section)}/${parentName}` : t(section);
   const imgUrl = getAssetUrl(cg.Bg, { type: 'cg' });
@@ -227,8 +278,23 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG", pag
     showThumbnailGrid(parentList, parentName, section, page);
   });
 
-  if (prev) document.getElementById("prevBtn").addEventListener("click", () => showCG(prev, parentName, parentList, section, page));
-  if (next) document.getElementById("nextBtn").addEventListener("click", () => showCG(next, parentName, parentList, section, page));
+  const prevBtn = document.getElementById("prevBtn");
+  if (prevBtn) {
+    prevBtn.addEventListener("click", () => {
+      if (prev) {
+        showCG(prev, parentName, parentList, section, page);
+      }
+    });
+  }
+
+  const nextBtn = document.getElementById("nextBtn");
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+      if (next) {
+        showCG(next, parentName, parentList, section, page);
+      }
+    });
+  }
 
   // Preload other images in the same group
   parentList.forEach(item => {
@@ -240,15 +306,10 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG", pag
       }
     }
   });
-
-  // Keyboard support
-  document.onkeydown = (e) => {
-    if (e.key === "ArrowLeft" && prev) showCG(prev, parentName, parentList, section, page);
-    if (e.key === "ArrowRight" && next) showCG(next, parentName, parentList, section, page);
-  };
 }
 
-export function showEmojiGrid(emojis, page = 1) {
+export function showEmojiGrid(emojis, page = 1, packId = 'all') {
+  const filteredEmojis = emojis.filter(e => e.Id !== 11700001);
   const main = document.getElementById("mainContent");
   main.innerHTML = "";
 
@@ -264,7 +325,7 @@ export function showEmojiGrid(emojis, page = 1) {
   const pageSize = 24;
   const start = (page - 1) * pageSize;
   const end = start + pageSize;
-  const paginatedEmojis = emojis.sort((a,b) => a.Order - b.Order).slice(start, end);
+  const paginatedEmojis = filteredEmojis.sort((a,b) => a.Order - b.Order).slice(start, end);
 
   paginatedEmojis.forEach(emoji => {
     const imgUrl = getAssetUrl(emoji.Path);
@@ -272,8 +333,7 @@ export function showEmojiGrid(emojis, page = 1) {
     const wrapper = document.createElement("div");
     wrapper.className = "flex flex-col items-center cursor-pointer";
     wrapper.onclick = () => {
-      console.log(imgUrl);
-      showEmojiDetails(emoji, emojis, page);
+      location.hash = `#/emoji/${packId}/${emoji.Id}`;
     };
 
     const img = document.createElement("img");
@@ -292,7 +352,7 @@ export function showEmojiGrid(emojis, page = 1) {
   });
 
   // Pagination
-  const totalPages = Math.ceil(emojis.length / pageSize);
+  const totalPages = Math.ceil(filteredEmojis.length / pageSize);
   if (totalPages > 1) {
     const paginationDiv = document.createElement("div");
     paginationDiv.className = "flex justify-center items-center space-x-4 mt-4";
@@ -301,29 +361,29 @@ export function showEmojiGrid(emojis, page = 1) {
     firstPageButton.textContent = "<<";
     firstPageButton.className = "px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
     firstPageButton.disabled = page <= 1;
-    firstPageButton.onclick = () => showEmojiGrid(emojis, 1);
+    firstPageButton.onclick = () => showEmojiGrid(emojis, 1, packId);
 
     const prevButton = document.createElement("button");
     prevButton.textContent = "<";
     prevButton.className = "px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
     prevButton.disabled = page <= 1;
-    prevButton.onclick = () => showEmojiGrid(emojis, page - 1);
+    prevButton.onclick = () => showEmojiGrid(emojis, page - 1, packId);
 
     const pageInput = createPageInput(page, totalPages, (newPage) => {
-        showEmojiGrid(emojis, newPage);
+        showEmojiGrid(emojis, newPage, packId);
     });
 
     const nextButton = document.createElement("button");
     nextButton.textContent = ">";
     nextButton.className = "px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
     nextButton.disabled = page >= totalPages;
-    nextButton.onclick = () => showEmojiGrid(emojis, page + 1);
+    nextButton.onclick = () => showEmojiGrid(emojis, page + 1, packId);
 
     const lastPageButton = document.createElement("button");
     lastPageButton.textContent = ">>";
     lastPageButton.className = "px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50";
     lastPageButton.disabled = page >= totalPages;
-    lastPageButton.onclick = () => showEmojiGrid(emojis, totalPages);
+    lastPageButton.onclick = () => showEmojiGrid(emojis, totalPages, packId);
 
     paginationDiv.appendChild(firstPageButton);
     paginationDiv.appendChild(prevButton);
@@ -334,10 +394,20 @@ export function showEmojiGrid(emojis, page = 1) {
   }
 }
 
-function showEmojiDetails(emoji, allEmojis, page = 1) {
+
+
+export function showEmojiDetails(emoji, allEmojis, page = 1, packId = 'all') {
   const modalId = "emoji-details-modal";
   let modal = document.getElementById(modalId);
   if (modal) modal.remove();
+
+  function closeModal() {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.remove();
+    }
+    location.hash = packId === 'all' ? '#/emoji' : `#/emoji/${packId}`;
+  }
 
   const imgUrl = getAssetUrl(emoji.Path);
   console.log(imgUrl);
@@ -382,18 +452,6 @@ function showEmojiDetails(emoji, allEmojis, page = 1) {
 
   document.body.appendChild(modal);
 
-  const originalOnKeyDown = document.onkeydown;
-  document.onkeydown = (e) => {
-    if (e.key === "ArrowLeft" && prev) showEmojiDetails(prev, allEmojis, page);
-    if (e.key === "ArrowRight" && next) showEmojiDetails(next, allEmojis, page);
-  };
-
-  const closeModal = () => {
-    modal.remove();
-    document.onkeydown = originalOnKeyDown; // Restore original handler
-    showEmojiGrid(allEmojis, page);
-  };
-
   document.getElementById("close-emoji-modal").onclick = closeModal;
   modal.onclick = (e) => {
     if (e.target === modal) {
@@ -401,8 +459,8 @@ function showEmojiDetails(emoji, allEmojis, page = 1) {
     }
   };
 
-  if (prev) document.getElementById("prevBtn").addEventListener("click", () => showEmojiDetails(prev, allEmojis, page));
-  if (next) document.getElementById("nextBtn").addEventListener("click", () => showEmojiDetails(next, allEmojis, page));
+  if (prev) document.getElementById("prevBtn").addEventListener("click", () => location.hash = `#/emoji/${packId}/${prev.Id}`);
+  if (next) document.getElementById("nextBtn").addEventListener("click", () => location.hash = `#/emoji/${packId}/${next.Id}`);
 }
 
 export function showStorySpriteGrid(storySprites, page = 1) {
@@ -428,7 +486,7 @@ export function showStorySpriteGrid(storySprites, page = 1) {
   
       const wrapper = document.createElement("div");
       wrapper.className = "flex flex-col items-center cursor-pointer";
-      wrapper.onclick = () => showStorySpriteDetails(sprite, storySprites, page, start + index);
+      wrapper.onclick = () => location.hash = `#/story-sprite/${sprite.RoleId}`;
     const img = document.createElement("img");
     img.src = imgUrl;
     img.alt = sprite.Name;
@@ -487,9 +545,17 @@ export function showStorySpriteGrid(storySprites, page = 1) {
   }
 }
 
-function showStorySpriteDetails(sprite, allSprites, page = 1, index = 0) {
+export function showStorySpriteDetails(sprite, allSprites, page = 1, index = 0) {
   const modalId = "story-sprite-details-modal";
   let modal = document.getElementById(modalId);
+
+  function closeStorySpriteModal() {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.remove();
+    }
+    location.hash = `#/story-sprite`;
+  }
 
   const imgUrl = getAssetUrl(sprite.RoleIcon);
 
@@ -519,10 +585,10 @@ function showStorySpriteDetails(sprite, allSprites, page = 1, index = 0) {
     document.body.appendChild(modal);
 
     // Event listeners for the modal itself (only once)
-    document.getElementById("close-story-sprite-modal").onclick = () => modal.remove();
+    document.getElementById("close-story-sprite-modal").onclick = closeStorySpriteModal;
     modal.onclick = (e) => {
       if (e.target === modal) {
-        modal.remove();
+        closeStorySpriteModal();
       }
     };
 
@@ -555,13 +621,20 @@ function showStorySpriteDetails(sprite, allSprites, page = 1, index = 0) {
   // Update navigation button handlers to call showStorySpriteDetails with new sprite and index
   prevSpriteBtn.onclick = () => {
     if (prevSprite) {
-      showStorySpriteDetails(prevSprite, allSprites, page, index - 1);
+      location.hash = `#/story-sprite/${prevSprite.RoleId}`;
     }
   };
 
   nextSpriteBtn.onclick = () => {
     if (nextSprite) {
-      showStorySpriteDetails(nextSprite, allSprites, page, index + 1);
+      location.hash = `#/story-sprite/${nextSprite.RoleId}`;
+    }
+  };
+
+  document.getElementById("close-story-sprite-modal").onclick = closeStorySpriteModal;
+  modal.onclick = (e) => {
+    if (e.target === modal) {
+      closeStorySpriteModal();
     }
   };
 }
