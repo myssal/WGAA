@@ -91,6 +91,9 @@ const routes = {
             showEmojiDetails(emoji, emojiList, page, id);
         }
     },
+    "/story-sprite": () => {
+        showStorySpriteGrid(storySprites, 1);
+    },
     "/story-sprite/:spriteId": (spriteId) => {
         const sprite = storySprites.find(s => s.RoleId === parseInt(spriteId));
         if (sprite) {
