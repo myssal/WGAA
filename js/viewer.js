@@ -189,6 +189,12 @@ export function showThumbnailGrid(cgList, parentName = "", section = "CG", page 
 
 /** Show individual CG with navigation */
 export function showCG(cg, parentName = "", parentList = [], section = "CG", page = 1) {
+  if (section === "CG") {
+    history.replaceState(null, null, `#/cg/${encodeURIComponent(parentName)}/${cg.Id}`);
+  } else if (section === "Manga") {
+    history.replaceState(null, null, `#/manga/${encodeURIComponent(parentName)}/${cg.Id}`);
+  }
+
   const main = document.getElementById("mainContent");
   const categoryPath = parentName ? `${t(section)}/${parentName}` : t(section);
   const imgUrl = getAssetUrl(cg.Bg, { type: 'cg' });
@@ -272,6 +278,24 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG", pag
     showThumbnailGrid(parentList, parentName, section, page);
   });
 
+  const prevBtn = document.getElementById("prevBtn");
+  if (prevBtn) {
+    prevBtn.addEventListener("click", () => {
+      if (prev) {
+        showCG(prev, parentName, parentList, section, page);
+      }
+    });
+  }
+
+  const nextBtn = document.getElementById("nextBtn");
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+      if (next) {
+        showCG(next, parentName, parentList, section, page);
+      }
+    });
+  }
+
   // Preload other images in the same group
   parentList.forEach(item => {
     if (item.Id !== cg.Id) {
@@ -308,8 +332,7 @@ export function showEmojiGrid(emojis, page = 1) {
     const wrapper = document.createElement("div");
     wrapper.className = "flex flex-col items-center cursor-pointer";
     wrapper.onclick = () => {
-      console.log(imgUrl);
-      showEmojiDetails(emoji, emojis, page);
+      location.hash = `#/emoji/${emoji.Id}`;
     };
 
     const img = document.createElement("img");
@@ -370,10 +393,20 @@ export function showEmojiGrid(emojis, page = 1) {
   }
 }
 
-function showEmojiDetails(emoji, allEmojis, page = 1) {
+
+
+export function showEmojiDetails(emoji, allEmojis, page = 1) {
   const modalId = "emoji-details-modal";
   let modal = document.getElementById(modalId);
   if (modal) modal.remove();
+
+  function closeModal() {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.remove();
+    }
+    location.hash = `#/emoji`;
+  }
 
   const imgUrl = getAssetUrl(emoji.Path);
   console.log(imgUrl);
@@ -425,8 +458,8 @@ function showEmojiDetails(emoji, allEmojis, page = 1) {
     }
   };
 
-  if (prev) document.getElementById("prevBtn").addEventListener("click", () => showEmojiDetails(prev, allEmojis, page));
-  if (next) document.getElementById("nextBtn").addEventListener("click", () => showEmojiDetails(next, allEmojis, page));
+  if (prev) document.getElementById("prevBtn").addEventListener("click", () => location.hash = `#/emoji/${prev.Id}`);
+  if (next) document.getElementById("nextBtn").addEventListener("click", () => location.hash = `#/emoji/${next.Id}`);
 }
 
 export function showStorySpriteGrid(storySprites, page = 1) {
@@ -452,7 +485,7 @@ export function showStorySpriteGrid(storySprites, page = 1) {
   
       const wrapper = document.createElement("div");
       wrapper.className = "flex flex-col items-center cursor-pointer";
-      wrapper.onclick = () => showStorySpriteDetails(sprite, storySprites, page, start + index);
+      wrapper.onclick = () => location.hash = `#/story-sprite/${sprite.RoleId}`;
     const img = document.createElement("img");
     img.src = imgUrl;
     img.alt = sprite.Name;
@@ -511,9 +544,17 @@ export function showStorySpriteGrid(storySprites, page = 1) {
   }
 }
 
-function showStorySpriteDetails(sprite, allSprites, page = 1, index = 0) {
+export function showStorySpriteDetails(sprite, allSprites, page = 1, index = 0) {
   const modalId = "story-sprite-details-modal";
   let modal = document.getElementById(modalId);
+
+  function closeStorySpriteModal() {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.remove();
+    }
+    location.hash = `#/story-sprite`;
+  }
 
   const imgUrl = getAssetUrl(sprite.RoleIcon);
 
@@ -543,10 +584,10 @@ function showStorySpriteDetails(sprite, allSprites, page = 1, index = 0) {
     document.body.appendChild(modal);
 
     // Event listeners for the modal itself (only once)
-    document.getElementById("close-story-sprite-modal").onclick = () => modal.remove();
+    document.getElementById("close-story-sprite-modal").onclick = closeStorySpriteModal;
     modal.onclick = (e) => {
       if (e.target === modal) {
-        modal.remove();
+        closeStorySpriteModal();
       }
     };
 
@@ -579,13 +620,13 @@ function showStorySpriteDetails(sprite, allSprites, page = 1, index = 0) {
   // Update navigation button handlers to call showStorySpriteDetails with new sprite and index
   prevSpriteBtn.onclick = () => {
     if (prevSprite) {
-      showStorySpriteDetails(prevSprite, allSprites, page, index - 1);
+      location.hash = `#/story-sprite/${prevSprite.RoleId}`;
     }
   };
 
   nextSpriteBtn.onclick = () => {
     if (nextSprite) {
-      showStorySpriteDetails(nextSprite, allSprites, page, index + 1);
+      location.hash = `#/story-sprite/${nextSprite.RoleId}`;
     }
   };
 
