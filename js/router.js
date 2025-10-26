@@ -54,22 +54,6 @@ const routes = {
             showCG(manga, `${group.Name}/${chapter.Name}`, augmented, "Manga", page);
         }
     },
-    "/emoji": () => {
-        document.getElementById("mainContent").innerHTML = "";
-    },
-    "/emoji/:packId": (packId) => {
-        const id = parseInt(packId);
-        const pack = emojiPacks.find(p => p.Id === id);
-        if (pack) {
-            let filteredEmojis;
-            if (pack.Id === 0) {
-                filteredEmojis = emojis.filter(e => !e.PackageId);
-            } else {
-                filteredEmojis = emojis.filter(e => e.PackageId === pack.Id);
-            }
-            showEmojiGrid(filteredEmojis, 1, id);
-        }
-    },
     "/emoji/:packId/:emojiId": (packId, emojiId) => {
         const id = parseInt(packId);
         const pack = emojiPacks.find(p => p.Id === id);
@@ -90,6 +74,24 @@ const routes = {
             showEmojiGrid(emojiList, page, id);
             showEmojiDetails(emoji, emojiList, page, id);
         }
+    },
+    "/emoji/:packId/:page?": (packId, page = 1) => {
+        const id = parseInt(packId);
+        const pack = emojiPacks.find(p => p.Id === id);
+        if (pack) {
+            let filteredEmojis;
+            if (pack.Id === 0) {
+                filteredEmojis = emojis.filter(e => !e.PackageId);
+            } else {
+                filteredEmojis = emojis.filter(e => e.PackageId === pack.Id);
+            }
+            showEmojiGrid(filteredEmojis, parseInt(page), id);
+        }
+    },
+    "/emoji/:page?": (page = 1) => {
+        const main = document.getElementById("mainContent");
+        main.innerHTML = ""; // Clear content
+        showEmojiGrid(emojis.filter(e => !e.PackageId), parseInt(page), 'all');
     },
     "/story-sprite": () => {
         showStorySpriteGrid(storySprites, 1);
@@ -115,12 +117,29 @@ export const router = () => {
 
     for (const route in routes) {
         const routeParts = route.split("/").slice(1);
-        if (routeParts.length === pathParts.length) {
+        // Calculate min and max length for the current route
+        let minLength = 0;
+        let maxLength = 0;
+        routeParts.forEach(part => {
+            if (!part.endsWith("?")) { // Required parameter
+                minLength++;
+                maxLength++;
+            } else { // Optional parameter
+                maxLength++;
+            }
+        });
+
+        if (pathParts.length >= minLength && pathParts.length <= maxLength) {
             let match = true;
             let tempParams = [];
             for (let i = 0; i < routeParts.length; i++) {
                 if (routeParts[i].startsWith(":")) {
-                    tempParams.push(decodeURIComponent(pathParts[i]));
+                    // If it's an optional parameter and not present in pathParts, push undefined
+                    if (routeParts[i].endsWith("?") && i >= pathParts.length) {
+                        tempParams.push(undefined);
+                    } else {
+                        tempParams.push(decodeURIComponent(pathParts[i]));
+                    }
                 } else if (routeParts[i] !== pathParts[i]) {
                     match = false;
                     break;

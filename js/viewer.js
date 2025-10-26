@@ -359,7 +359,6 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG", pag
 }
 
 export function showEmojiGrid(emojis, page = 1, packId = 'all') {
-  const filteredEmojis = emojis.filter(e => e.Id !== 11700001);
   const main = document.getElementById("mainContent");
   main.innerHTML = "";
 
@@ -375,7 +374,7 @@ export function showEmojiGrid(emojis, page = 1, packId = 'all') {
   const pageSize = 24;
   const start = (page - 1) * pageSize;
   const end = start + pageSize;
-  const paginatedEmojis = filteredEmojis.sort((a,b) => a.Order - b.Order).slice(start, end);
+  const paginatedEmojis = emojis.sort((a,b) => a.Order - b.Order).slice(start, end);
 
   paginatedEmojis.forEach(emoji => {
     const imgUrl = getAssetUrl(emoji.Path);
@@ -402,7 +401,7 @@ export function showEmojiGrid(emojis, page = 1, packId = 'all') {
   });
 
   // Pagination
-  const totalPages = Math.ceil(filteredEmojis.length / pageSize);
+  const totalPages = Math.ceil(emojis.length / pageSize);
   if (totalPages > 1) {
     const paginationDiv = document.createElement("div");
     paginationDiv.className = "flex justify-center items-center space-x-4 mt-4";
@@ -451,12 +450,19 @@ export function showEmojiDetails(emoji, allEmojis, page = 1, packId = 'all') {
   let modal = document.getElementById(modalId);
   if (modal) modal.remove();
 
-  function closeModal() {
+  function closeModal(currentPage) {
     const modal = document.getElementById(modalId);
     if (modal) {
       modal.remove();
     }
-    location.hash = packId === 'all' ? '#/emoji' : `#/emoji/${packId}`;
+    // Construct the hash for the current pack and page
+    const targetHash = packId === 'all' ? `#/emoji` : `#/emoji/${packId}`;
+    const targetHashWithPage = currentPage && currentPage > 1 ? `${targetHash}/${currentPage}` : targetHash;
+
+    // Only update location.hash if it's different from the current one
+    if (location.hash !== targetHashWithPage) {
+      location.hash = targetHashWithPage;
+    }
   }
 
   const imgUrl = getAssetUrl(emoji.Path);
@@ -502,10 +508,10 @@ export function showEmojiDetails(emoji, allEmojis, page = 1, packId = 'all') {
 
   document.body.appendChild(modal);
 
-  document.getElementById("close-emoji-modal").onclick = closeModal;
+  document.getElementById("close-emoji-modal").onclick = () => closeModal(page); // Pass the current page
   modal.onclick = (e) => {
     if (e.target === modal) {
-      closeModal();
+      closeModal(page); // Pass the current page
     }
   };
 
@@ -626,12 +632,19 @@ export function showStorySpriteDetails(sprite, allSprites, page = 1, index = 0) 
   const modalId = "story-sprite-details-modal";
   let modal = document.getElementById(modalId);
 
-  function closeStorySpriteModal() {
+  function closeStorySpriteModal(currentPage) {
     const modal = document.getElementById(modalId);
     if (modal) {
       modal.remove();
     }
-    location.hash = `#/story-sprite`;
+    // Construct the hash for the current page
+    const targetHash = `#/story-sprite`;
+    const targetHashWithPage = currentPage && currentPage > 1 ? `${targetHash}/${currentPage}` : targetHash;
+
+    // Only update location.hash if it's different from the current one
+    if (location.hash !== targetHashWithPage) {
+      location.hash = targetHashWithPage;
+    }
   }
 
   const imgUrl = getAssetUrl(sprite.RoleIcon);
@@ -720,10 +733,10 @@ export function showStorySpriteDetails(sprite, allSprites, page = 1, index = 0) 
     };
   }
 
-  document.getElementById("close-story-sprite-modal").onclick = closeStorySpriteModal;
+  document.getElementById("close-story-sprite-modal").onclick = () => closeStorySpriteModal(page); // Pass the current page
   modal.onclick = (e) => {
     if (e.target === modal) {
-      closeStorySpriteModal();
+      closeStorySpriteModal(page); // Pass the current page
     }
   };
 }
