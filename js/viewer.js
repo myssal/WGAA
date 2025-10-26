@@ -205,14 +205,20 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG", pag
   const next = parentList[index + 1];
 
   // Keep container height stable using aspect ratio + min height
-  main.innerHTML = `
-    <div class="max-w-5xl mx-auto text-center relative">
+  let cgViewerContainer = document.getElementById("cgViewerContainer");
+
+  if (!cgViewerContainer) {
+    main.innerHTML = ""; // Clear main content only if cgViewerContainer doesn't exist
+    cgViewerContainer = document.createElement("div");
+    cgViewerContainer.id = "cgViewerContainer";
+    cgViewerContainer.className = "max-w-5xl mx-auto text-center relative";
+    cgViewerContainer.innerHTML = `
       <div class="flex justify-between items-center mb-4">
         <button id="backBtn" class="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm">${t("backButton")}</button>
-        <span class="text-gray-200 font-bold">${categoryPath} (${index + 1} / ${parentList.length})</span>
+        <span id="cgPath" class="text-gray-200 font-bold"></span>
       </div>
 
-      ${section !== "Manga" ? `<h2 class="text-2xl font-bold mb-4">${cg.Name || parentName || t("unknown")}</h2>` : ""}
+      <h2 id="cgTitle" class="text-2xl font-bold mb-4"></h2>
 
       <div class="relative rounded-lg overflow-hidden shadow-lg bg-gray-800 flex items-center justify-center"
            style="width:100%; max-width:90%; aspect-ratio: 16 / 9; min-height: 60vh; margin: 0 auto;">
@@ -223,32 +229,67 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG", pag
         </div>
 
         <!-- Actual image -->
-        <img id="cgImage" src="${imgUrl}" alt="${cg.Name}"
+        <img id="cgImage" src="" alt=""
              class="absolute inset-0 w-full h-full object-contain transition-opacity duration-500 opacity-0">
 
         <!-- Navigation arrows -->
-        <button id="prevBtn" ${!prev ? "disabled" : ""} 
+        <button id="prevBtn" 
                 class="absolute left-3 top-1/2 -translate-y-1/2 text-3xl text-gray-300 hover:text-white disabled:opacity-30 z-10">
           &#10094;
         </button>
-        <button id="nextBtn" ${!next ? "disabled" : ""} 
+        <button id="nextBtn" 
                 class="absolute right-3 top-1/2 -translate-y-1/2 text-3xl text-gray-300 hover:text-white disabled:opacity-30 z-10">
           &#10095;
         </button>
       </div>
 
-      ${section !== "Manga" ? `<p class="mt-4 text-gray-300">${cg.Desc || ""}</p>` : ""}
-      <p class="text-gray-500 text-sm mt-2">${t("idLabel")}: ${cg.Id}</p>
-    </div>
+      <p id="cgDescription" class="mt-4 text-gray-300"></p>
+      <p id="cgId" class="text-gray-500 text-sm mt-2"></p>
+    `;
+    main.appendChild(cgViewerContainer);
 
-    <!-- Modal -->
-    <div id="imageModal" class="fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center hidden z-50">
-      <img id="modalImage" src="" class="max-w-[90%] max-h-[90%] rounded shadow-lg">
-    </div>
-  `;
+    // Modal (only create once)
+    let imageModal = document.getElementById("imageModal");
+    if (!imageModal) {
+      imageModal = document.createElement("div");
+      imageModal.id = "imageModal";
+      imageModal.className = "fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center hidden z-50";
+      imageModal.innerHTML = `<img id="modalImage" src="" class="max-w-[90%] max-h-[90%] rounded shadow-lg">`;
+      document.body.appendChild(imageModal);
+    }
+  }
+
+  // Update dynamic content
+  document.getElementById("cgPath").textContent = `${categoryPath} (${index + 1} / ${parentList.length})`;
+  
+  const cgTitle = document.getElementById("cgTitle");
+  if (section !== "Manga") {
+    cgTitle.textContent = cg.Name || parentName || t("unknown");
+    cgTitle.style.display = "block";
+  } else {
+    cgTitle.style.display = "none";
+  }
+
+  const cgDescription = document.getElementById("cgDescription");
+  if (section !== "Manga") {
+    cgDescription.textContent = cg.Desc || "";
+    cgDescription.style.display = "block";
+  } else {
+    cgDescription.style.display = "none";
+  }
+
+  document.getElementById("cgId").textContent = `${t("idLabel")}: ${cg.Id}`;
 
   const cgImage = document.getElementById("cgImage");
   const spinner = document.getElementById("loadingSpinner");
+
+  // Reset image opacity and show spinner before loading new image
+  cgImage.classList.remove("opacity-100");
+  cgImage.classList.add("opacity-0");
+  spinner.style.display = "flex";
+
+  cgImage.src = imgUrl;
+  cgImage.alt = cg.Name;
 
   // Fade-in effect
   cgImage.onload = () => {
@@ -257,55 +298,64 @@ export function showCG(cg, parentName = "", parentList = [], section = "CG", pag
     cgImage.classList.add("opacity-100");
   };
 
-  // Modal logic
+  // Modal logic (ensure event listeners are only attached once)
   const imageModal = document.getElementById("imageModal");
   const modalImage = document.getElementById("modalImage");
 
-  cgImage.addEventListener("click", () => {
-    modalImage.src = imgUrl;
-    imageModal.classList.remove("hidden");
-  });
+  if (!cgImage.dataset.listenerAttached) {
+    cgImage.addEventListener("click", () => {
+      modalImage.src = cgImage.src; // Use the current src of the displayed image
+      imageModal.classList.remove("hidden");
+    });
+    cgImage.dataset.listenerAttached = "true";
+  }
 
-  imageModal.addEventListener("click", e => {
-    if (e.target === imageModal) {
-      imageModal.classList.add("hidden");
-      modalImage.src = "";
-    }
-  });
+  if (!imageModal.dataset.listenerAttached) {
+    imageModal.addEventListener("click", e => {
+      if (e.target === imageModal) {
+        imageModal.classList.add("hidden");
+        modalImage.src = "";
+      }
+    });
+    imageModal.dataset.listenerAttached = "true";
+  }
 
   // Navigation buttons
-  document.getElementById("backBtn").addEventListener("click", () => {
+  document.getElementById("backBtn").onclick = () => {
     showThumbnailGrid(parentList, parentName, section, page);
-  });
+  };
 
   const prevBtn = document.getElementById("prevBtn");
-  if (prevBtn) {
-    prevBtn.addEventListener("click", () => {
-      if (prev) {
-        showCG(prev, parentName, parentList, section, page);
-      }
-    });
-  }
+  prevBtn.disabled = !prev;
+  prevBtn.onclick = () => {
+    if (prev) {
+      showCG(prev, parentName, parentList, section, page);
+    }
+  };
 
   const nextBtn = document.getElementById("nextBtn");
-  if (nextBtn) {
-    nextBtn.addEventListener("click", () => {
-      if (next) {
-        showCG(next, parentName, parentList, section, page);
-      }
-    });
-  }
+  nextBtn.disabled = !next;
+  nextBtn.onclick = () => {
+    if (next) {
+      showCG(next, parentName, parentList, section, page);
+    }
+  };
 
-  // Preload other images in the same group
-  parentList.forEach(item => {
-    if (item.Id !== cg.Id) {
-      const preloadUrl = getAssetUrl(item.Bg, { type: 'cg' });
+  // Preload a limited number of images around the current one
+  const preloadRange = 7; // Preload 3 before, current, and 3 after
+  const startIndex = Math.max(0, index - Math.floor(preloadRange / 2));
+  const endIndex = Math.min(parentList.length - 1, index + Math.floor(preloadRange / 2));
+
+  for (let i = startIndex; i <= endIndex; i++) {
+    const itemToPreload = parentList[i];
+    if (itemToPreload.Id !== cg.Id) { // Don't preload the current image again
+      const preloadUrl = getAssetUrl(itemToPreload.Bg, { type: 'cg' });
       if (preloadUrl) {
         const preloadImg = new Image();
         preloadImg.src = preloadUrl;
       }
     }
-  });
+  }
 }
 
 export function showEmojiGrid(emojis, page = 1, packId = 'all') {
