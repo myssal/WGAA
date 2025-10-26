@@ -1,6 +1,7 @@
 import { DATA_REPO, BRANCH, currentRegion } from "./config.js";
 import { renderSidebar } from "./sidebar.js";
 import { loadLocale, t } from "./locale.js";
+import { initializeRouter, router } from "./router.js";
 
 export let groups = [];       // CGGroup
 export let details = [];      // CGDetail
@@ -52,6 +53,7 @@ async function loadConfigs(region) {
 
     // Render sidebar
     renderSidebar(groups, details, mangaGroups, mangaChapters, mangaDetails, emojis, storySprites);
+    router();
   } catch (err) {
     console.error("Failed to load config:", err);
     document.getElementById("mainContent").innerHTML =
@@ -64,7 +66,6 @@ document.getElementById("regionSelect").addEventListener("change", e => {
   loadConfigs(e.target.value);
 });
 
-
-
 /** Initialize */
+initializeRouter();
 loadConfigs(currentRegion);
