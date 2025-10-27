@@ -40,7 +40,7 @@ export function showConstructCoatingGrid(fashions, characters, page = 1) {
 
   const renderGrid = (fashionsToRender, currentPage) => {
     gridDiv.innerHTML = "";
-    const pageSize = 16;
+    const pageSize = 15;
     const start = (currentPage - 1) * pageSize;
     const end = start + pageSize;
     const paginatedFashions = fashionsToRender.slice(start, end);
@@ -161,8 +161,7 @@ export function showConstructCoatingDetailsPopup(fashion, allFashions, character
   modal.id = modalId;
   modal.className = "fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50";
   modal.innerHTML = `
-    <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-4xl relative">
-      <button id="close-coating-modal" class="absolute top-2 right-2 text-gray-400 hover:text-white">&times;</button>
+    <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-3xl relative">
       <div class="flex justify-center items-center mb-4">
         <span class="text-gray-200 font-bold">${t("constructCoating")} (${index + 1} / ${allFashions.length})</span>
       </div>
@@ -172,7 +171,7 @@ export function showConstructCoatingDetailsPopup(fashion, allFashions, character
       </button>
 
       <div class="flex mb-6">
-        <img src="${imgUrl}" alt="${fashion.Name}" class="w-48 h-48 object-contain mr-8">
+        <img src="${imgUrl}" alt="${fashion.Name}" class="w-72 h-72 object-contain mr-8">
         <div class="flex-1 text-left space-y-2">
           <h2 class="text-3xl font-bold text-gray-100">${fashion.Name} (${rarity})</h2>
           <p class="text-lg text-gray-300 italic">"${fashion.Description.replace(/\n/g, '<br>')}"</p>
@@ -243,7 +242,7 @@ export function showWeaponCoatingGrid(weaponFashions, page = 1) {
 
   const renderGrid = (fashionsToRender, currentPage) => {
     gridDiv.innerHTML = "";
-    const pageSize = 16;
+    const pageSize = 15;
     const start = (currentPage - 1) * pageSize;
     const end = start + pageSize;
     const paginatedFashions = fashionsToRender.slice(start, end);
@@ -350,7 +349,7 @@ export function showWeaponCoatingDetailsPopup(weaponFashion, allWeaponFashions, 
     modal.id = modalId;
     modal.className = "fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50";
     modal.innerHTML = `
-    <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-4xl relative">
+    <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-3xl relative">
       <button id="close-weapon-coating-modal" class="absolute top-2 right-2 text-gray-400 hover:text-white">&times;</button>
       <div class="flex justify-center items-center mb-4">
         <span class="text-gray-200 font-bold">${t("weaponCoating")} (${index + 1} / ${allWeaponFashions.length})</span>
@@ -361,7 +360,7 @@ export function showWeaponCoatingDetailsPopup(weaponFashion, allWeaponFashions, 
       </button>
 
       <div class="flex mb-6">
-        <img src="${imgUrl}" alt="${weaponFashion.Name}" class="w-48 h-48 object-contain mr-8">
+        <img src="${imgUrl}" alt="${weaponFashion.Name}" class="w-72 h-72 object-contain mr-8">
         <div class="flex-1 text-left space-y-2">
             <h2 class="text-3xl font-bold text-gray-100">${weaponFashion.Name} (${rarity})</h2>
             <p class="text-lg text-gray-300 italic">"${weaponFashion.Description.replace(/\n/g, '<br>')}"</p>
