@@ -893,6 +893,24 @@ export function showMemoryDetails(memorySuit, equips, equipRes, awarenessSetting
   const memoryId = memorySuit.Id;
   const memoryName = memorySuit.Name;
 
+  // Modal (only create once)
+  let imageModal = document.getElementById("imageModal");
+  if (!imageModal) {
+    imageModal = document.createElement("div");
+    imageModal.id = "imageModal";
+    imageModal.className = "fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center hidden z-50";
+    imageModal.innerHTML = `<img id="modalImage" src="" class="max-w-[90%] max-h-[90%] rounded shadow-lg">`;
+    document.body.appendChild(imageModal);
+
+    // Add event listener to close modal when clicking outside the image
+    imageModal.addEventListener("click", e => {
+      if (e.target === imageModal) {
+        imageModal.classList.add("hidden");
+        document.getElementById("modalImage").src = "";
+      }
+    });
+  }
+
   // Find associated Equip and EquipRes data
   const equipId = memorySuit.EquipIds[0];
   const equip = equips.find(e => e.Id === equipId);
@@ -943,9 +961,9 @@ export function showMemoryDetails(memorySuit, equips, equipRes, awarenessSetting
       <div class="mb-6">
         <h3 class="text-xl font-semibold text-gray-100 mb-2 text-left">${t("illustration")}</h3>
         <div class="grid grid-cols-3 gap-4">
-          <img src="${liHuiUrl1}" alt="${memoryName} 1" class="w-full h-auto object-contain rounded-lg shadow-md">
-          <img src="${liHuiUrl2}" alt="${memoryName} 2" class="w-full h-auto object-contain rounded-lg shadow-md">
-          <img src="${liHuiUrl3}" alt="${memoryName} 3" class="w-full h-auto object-contain rounded-lg shadow-md">
+          <img src="${liHuiUrl1}" alt="${memoryName} 1" class="w-full h-auto object-contain rounded-lg shadow-md cursor-pointer" onclick="document.getElementById('modalImage').src = this.src; document.getElementById('imageModal').classList.remove('hidden');">
+          <img src="${liHuiUrl2}" alt="${memoryName} 2" class="w-full h-auto object-contain rounded-lg shadow-md cursor-pointer" onclick="document.getElementById('modalImage').src = this.src; document.getElementById('imageModal').classList.remove('hidden');">
+          <img src="${liHuiUrl3}" alt="${memoryName} 3" class="w-full h-auto object-contain rounded-lg shadow-md cursor-pointer" onclick="document.getElementById('modalImage').src = this.src; document.getElementById('imageModal').classList.remove('hidden');">
         </div>
       </div>
 
