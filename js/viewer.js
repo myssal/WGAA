@@ -919,30 +919,29 @@ export function showMemoryDetails(memorySuit, equips, equipRes, awarenessSetting
         <span class="text-gray-400">memory/${memoryName}</span>
       </div>
 
-      <div class="flex items-center space-x-4 mb-6">
-        <img src="${iconUrl}" alt="${memoryName}" class="w-24 h-24 object-contain rounded-full border-2 border-gray-600">
-        <div>
-          <p class="text-xs text-gray-400">${t("rarity")}: ${equip ? equip.Quality + '★' : 'N/A'}</p>
-          <h2 class="text-3xl font-bold text-gray-100">${memoryName}</h2>
-          <p class="text-sm text-blue-400">${t("tag")}: ${memorySuit.Description}</p>
+      <div class="flex mb-6">
+        <img src="${iconUrl}" alt="${memoryName}" class="w-32 h-32 object-contain mr-8">
+        <div class="flex-1 text-left space-y-2">
+          <h2 class="text-3xl font-bold text-gray-100">${memoryName} ${equip ? `(${equip.Quality}★)` : ''}</h2>
+          <span class="inline-block bg-blue-600 text-white text-xs px-2 py-1 rounded-full mt-1">${memorySuit.Description}</span>
           <p class="text-sm text-gray-300">${t("artist")}: ${equipResource ? equipResource.PainterName : 'N/A'}</p>
         </div>
       </div>
 
       <div class="mb-6">
-        <h3 class="text-xl font-semibold text-gray-100 mb-2">${t("setEffect")}</h3>
-        <div class="bg-gray-700 p-3 rounded-md mb-2">
+        <h3 class="text-xl font-semibold text-gray-100 mb-2 text-left">${t("setEffect")}</h3>
+        <div class="bg-gray-700 p-3 rounded-md mb-2 text-left">
           <p class="font-bold text-gray-200">${t("set2Effect")}:</p>
           <p class="text-gray-300">${memorySuit.SkillDescription[0] || 'N/A'}</p>
         </div>
-        <div class="bg-gray-700 p-3 rounded-md">
+        <div class="bg-gray-700 p-3 rounded-md text-left">
           <p class="font-bold text-gray-200">${t("set4Effect")}:</p>
           <p class="text-gray-300">${memorySuit.SkillDescription[1] || 'N/A'}</p>
         </div>
       </div>
 
       <div class="mb-6">
-        <h3 class="text-xl font-semibold text-gray-100 mb-2">${t("illustration")}</h3>
+        <h3 class="text-xl font-semibold text-gray-100 mb-2 text-left">${t("illustration")}</h3>
         <div class="grid grid-cols-3 gap-4">
           <img src="${liHuiUrl1}" alt="${memoryName} 1" class="w-full h-auto object-contain rounded-lg shadow-md">
           <img src="${liHuiUrl2}" alt="${memoryName} 2" class="w-full h-auto object-contain rounded-lg shadow-md">
@@ -951,9 +950,9 @@ export function showMemoryDetails(memorySuit, equips, equipRes, awarenessSetting
       </div>
 
       <div>
-        <h3 class="text-xl font-semibold text-gray-100 mb-2">${t("backstory")}</h3>
-        ${backstories.map(story => `<div class="bg-gray-700 p-3 rounded-md mb-2"><p class="font-bold text-gray-200">${story.Title}</p><p class="text-gray-300">${story.Text}</p></div>`).join('')}
-        ${backstories.length === 0 ? `<p class="text-gray-400">No backstory available.</p>` : ''}
+        <h3 class="text-xl font-semibold text-gray-100 mb-2 text-left">${t("backstory")}</h3>
+        ${backstories.map(story => `<div class="bg-gray-700 p-3 rounded-md mb-2 text-left"><p class="font-bold text-gray-200">${story.Title}</p><p class="text-gray-300">${story.Text}</p></div>`).join('')}
+        ${backstories.length === 0 ? `<p class="text-gray-400 text-left">No backstory available.</p>` : ''}
       </div>
     </div>
   `;
