@@ -779,13 +779,14 @@ export function showMemoryGrid(equipSuits, equips, equipRes, page = 1) {
   searchInput.className = "bg-gray-700 text-gray-200 rounded px-2 py-1 focus:ring focus:ring-blue-500 flex-1";
   controlsDiv.appendChild(searchInput);
 
-  let filteredMemories = [...equipSuits];
+  let filteredMemories = equipSuits.filter(suit => suit.Id !== 0);
 
   const applyFilters = () => {
     const searchTerm = searchInput.value.toLowerCase();
     const selectedDescription = filterSelect.value;
 
     filteredMemories = equipSuits.filter(suit => {
+      if (suit.Id === 0) return false;
       const matchesSearch = suit.Name.toLowerCase().includes(searchTerm);
       const matchesFilter = selectedDescription === "" || suit.Description === selectedDescription;
       return matchesSearch && matchesFilter;
@@ -912,18 +913,18 @@ export function showMemoryDetails(memorySuit, equips, equipRes, awarenessSetting
   }
 
   // Find associated Equip and EquipRes data
-  const equipId = memorySuit.EquipIds[0];
-  const equip = equips.find(e => e.Id === equipId);
-  const equipResource = equipRes.find(er => er.Id === equipId);
+  const equipId = memorySuit.EquipIds && memorySuit.EquipIds.length > 0 ? memorySuit.EquipIds[0] : null;
+  const equip = equipId ? equips.find(e => e.Id === equipId) : null;
+  const equipResource = equipId ? equipRes.find(er => er.Id === equipId) : null;
 
   // Backstory
   const backstories = awarenessSettings.filter(aw => aw.SuitId === memoryId).sort((a, b) => a.Order - b.Order);
 
   const iconUrl = getAssetUrl(memorySuit.ClearIconPath, { type: 'memory' });
   const waferBagUrl = getAssetUrl(memorySuit.WaferBagPath, { type: 'memory' });
-  const liHuiPath1 = equipRes.find(er => er.Id === memorySuit.EquipIds[0])?.LiHuiPath;
-  const liHuiPath2 = equipRes.find(er => er.Id === memorySuit.EquipIds[1])?.LiHuiPath;
-  const liHuiPath3 = equipRes.find(er => er.Id === memorySuit.EquipIds[2])?.LiHuiPath;
+  const liHuiPath1 = memorySuit.EquipIds && memorySuit.EquipIds.length > 0 ? equipRes.find(er => er.Id === memorySuit.EquipIds[0])?.LiHuiPath : null;
+  const liHuiPath2 = memorySuit.EquipIds && memorySuit.EquipIds.length > 1 ? equipRes.find(er => er.Id === memorySuit.EquipIds[1])?.LiHuiPath : null;
+  const liHuiPath3 = memorySuit.EquipIds && memorySuit.EquipIds.length > 2 ? equipRes.find(er => er.Id === memorySuit.EquipIds[2])?.LiHuiPath : null;
 
   const liHuiUrl1 = liHuiPath1 ? getAssetUrl(liHuiPath1, { type: 'memory' }) : 'https://via.placeholder.com/100x150?text=N/A';
   const liHuiUrl2 = liHuiPath2 ? getAssetUrl(liHuiPath2, { type: 'memory' }) : 'https://via.placeholder.com/100x150?text=N/A';
@@ -969,7 +970,7 @@ export function showMemoryDetails(memorySuit, equips, equipRes, awarenessSetting
 
       <div>
         <h3 class="text-xl font-semibold text-gray-100 mb-2 text-left">${t("backstory")}</h3>
-        ${backstories.map(story => `<div class="bg-gray-700 p-3 rounded-md mb-2 text-left"><p class="font-bold text-gray-200">${story.Title}</p><p class="text-gray-300">${story.Text}</p></div>`).join('')}
+        ${backstories.map(story => `<div class="bg-gray-700 p-3 rounded-md mb-2 text-left"><p class="font-bold text-gray-200">${story.Title}</p><p class="text-gray-300 preserve-whitespace">${story.Text}</p></div>`).join('')}
         ${backstories.length === 0 ? `<p class="text-gray-400 text-left">No backstory available.</p>` : ''}
       </div>
     </div>
