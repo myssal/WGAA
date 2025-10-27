@@ -50,7 +50,7 @@ export function showConstructCoatingGrid(fashions, characters, page = 1) {
       const wrapper = document.createElement("div");
       wrapper.className = "flex flex-col items-center cursor-pointer";
       wrapper.onclick = () => {
-        showConstructCoatingDetailsPopup(fashion, fashions, characters, currentPage);
+        showConstructCoatingDetailsPopup(fashion, fashionsToRender, characters, currentPage);
       };
 
       const img = document.createElement("img");
@@ -116,7 +116,7 @@ export function showConstructCoatingGrid(fashions, characters, page = 1) {
     }
   }
 
-  const applyFilters = () => {
+  const applyFiltersAndRender = (currentPage) => {
     const selectedCharacter = filterSelect.value;
     let fashionsToRender = filteredFashions;
     if (selectedCharacter) {
@@ -125,11 +125,11 @@ export function showConstructCoatingGrid(fashions, characters, page = 1) {
             fashionsToRender = filteredFashions.filter(f => f.CharacterId === character.Id);
         }
     }
-    renderGrid(fashionsToRender, 1);
+    renderGrid(fashionsToRender, currentPage);
   }
 
-  filterSelect.addEventListener("change", applyFilters);
-  applyFilters();
+  filterSelect.addEventListener("change", () => applyFiltersAndRender(1));
+  applyFiltersAndRender(page);
 }
 
 export function showConstructCoatingDetailsPopup(fashion, allFashions, characters, page = 1) {

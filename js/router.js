@@ -120,11 +120,11 @@ const routes = {
             showMemoryDetails(memory, equips, equipRes, awarenessSettings);
         }
     },
-    "/coating/construct": () => {
-        showConstructCoatingGrid(fashions, characters);
+    "/coating/construct/:page?": (page = 1) => {
+        showConstructCoatingGrid(fashions, characters, parseInt(page));
     },
-    "/coating/weapon": () => {
-        showWeaponCoatingGrid(weaponFashions);
+    "/coating/weapon/:page?": (page = 1) => {
+        showWeaponCoatingGrid(weaponFashions, parseInt(page));
     },
 
 };
