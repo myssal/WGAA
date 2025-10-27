@@ -816,7 +816,7 @@ export function showMemoryGrid(equipSuits, equips, equipRes, page = 1) {
       const wrapper = document.createElement("div");
       wrapper.className = "flex flex-col items-center cursor-pointer bg-gray-800 p-3 rounded-lg shadow hover:shadow-lg transition-shadow duration-200";
       wrapper.onclick = () => {
-        location.hash = `#/memory/${encodeURIComponent(suit.Name)}`;
+        location.hash = `#/memory/${suit.Id}`;
       };
 
       const img = document.createElement("img");
@@ -916,7 +916,7 @@ export function showMemoryDetails(memorySuit, equips, equipRes, awarenessSetting
     <div class="max-w-4xl mx-auto p-4 bg-gray-800 rounded-lg shadow-xl">
       <div class="flex justify-between items-center mb-4">
         <button id="backToMemoryGrid" class="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm">${t("backButton")}</button>
-        <span class="text-gray-400">memory/${encodeURIComponent(memoryName)}</span>
+        <span class="text-gray-400">memory/${memoryName}</span>
       </div>
 
       <div class="flex items-center space-x-4 mb-6">

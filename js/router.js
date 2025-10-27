@@ -109,8 +109,8 @@ const routes = {
     "/memory": () => {
         showMemoryGrid(equipSuits, equips, equipRes);
     },
-    "/memory/:memoryName": (memoryName) => {
-        const memory = equipSuits.find(m => m.Name === memoryName);
+    "/memory/:memoryId": (memoryId) => {
+        const memory = equipSuits.find(m => m.Id === parseInt(memoryId));
         if (memory) {
             showMemoryDetails(memory, equips, equipRes, awarenessSettings);
         }
