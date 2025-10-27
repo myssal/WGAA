@@ -1,5 +1,9 @@
 
-import { showThumbnailGrid, showEmojiGrid, showStorySpriteGrid, showCG, showChapterGrid, showEmojiDetails, showStorySpriteDetails, showMemoryGrid, showMemoryDetails } from "./viewer.js";
+import { showThumbnailGrid, showCG } from "./views/cg-viewer.js";
+import { showEmojiGrid, showEmojiDetails } from "./views/emoji-viewer.js";
+import { showChapterGrid } from "./views/manga-viewer.js";
+import { showMemoryGrid, showMemoryDetails } from "./views/memory-viewer.js";
+import { showStorySpriteGrid, showStorySpriteDetails } from "./views/story-sprite-viewer.js";
 import { groups, details, mangaGroups, mangaChapters, mangaDetails, emojis, emojiPacks, storySprites, equips, equipRes, equipSuits, awarenessSettings } from "./main.js";
 import { t } from "./locale.js";
 
