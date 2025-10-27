@@ -1,7 +1,7 @@
 import { t } from "./locale.js";
 
 /** Render Sidebar */
-export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, mangaDetails, emojis, emojiPacks, storySprites, equips, equipRes, equipSuits, awarenessSettings) {
+export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, mangaDetails, emojis, emojiPacks, storySprites, equips, equipRes, equipSuits, awarenessSettings, fashions, characters, weaponFashions) {
   const container = document.getElementById("categoryList");
   if (!container) {
     console.error("Sidebar container #categoryList not found.");
@@ -23,6 +23,9 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
   equipRes = Array.isArray(equipRes) ? equipRes : [];
   equipSuits = Array.isArray(equipSuits) ? equipSuits : [];
   awarenessSettings = Array.isArray(awarenessSettings) ? awarenessSettings : [];
+  fashions = Array.isArray(fashions) ? fashions : [];
+  characters = Array.isArray(characters) ? characters : [];
+  weaponFashions = Array.isArray(weaponFashions) ? weaponFashions : [];
 
   const createCollapsible = (title) => {
     const div = document.createElement("div");
@@ -138,4 +141,29 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
 
   memoryButtonDiv.appendChild(memoryButton);
   container.appendChild(memoryButtonDiv);
+
+  /** Coating Section */
+  const coatingSection = createCollapsible(t("coatingSection"));
+  const coatingConstructDiv = document.createElement("div");
+  coatingConstructDiv.className = "pl-2 mb-1";
+  const coatingConstructButton = document.createElement("button");
+  coatingConstructButton.className = "w-full text-left px-3 py-1 rounded hover:bg-gray-700 transition text-sm font-semibold";
+  coatingConstructButton.textContent = t("constructCoating");
+  coatingConstructButton.addEventListener("click", () => {
+    location.hash = "#/coating/construct";
+  });
+  coatingConstructDiv.appendChild(coatingConstructButton);
+  coatingSection.content.appendChild(coatingConstructDiv);
+
+  const coatingWeaponDiv = document.createElement("div");
+  coatingWeaponDiv.className = "pl-2 mb-1";
+  const coatingWeaponButton = document.createElement("button");
+  coatingWeaponButton.className = "w-full text-left px-3 py-1 rounded hover:bg-gray-700 transition text-sm font-semibold";
+  coatingWeaponButton.textContent = t("weaponCoating");
+  coatingWeaponButton.addEventListener("click", () => {
+    location.hash = "#/coating/weapon";
+  });
+  coatingWeaponDiv.appendChild(coatingWeaponButton);
+  coatingSection.content.appendChild(coatingWeaponDiv);
+  container.appendChild(coatingSection.div);
 }

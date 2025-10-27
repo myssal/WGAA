@@ -21,5 +21,9 @@
   "set2Effect": "2件套效果",
   "set4Effect": "4件套效果",
   "illustration": "立繪",
-  "backstory": "背景故事"
+  "backstory": "背景故事",
+  "coatingSection": "涂装",
+  "constructCoating": "构造体",
+  "weaponCoating": "武器",
+  "worldDescription": "世界观描述"
 }

@@ -4,7 +4,8 @@ import { showEmojiGrid, showEmojiDetails } from "./views/emoji-viewer.js";
 import { showChapterGrid } from "./views/manga-viewer.js";
 import { showMemoryGrid, showMemoryDetails } from "./views/memory-viewer.js";
 import { showStorySpriteGrid, showStorySpriteDetails } from "./views/story-sprite-viewer.js";
-import { groups, details, mangaGroups, mangaChapters, mangaDetails, emojis, emojiPacks, storySprites, equips, equipRes, equipSuits, awarenessSettings } from "./main.js";
+import { showConstructCoatingGrid, showWeaponCoatingGrid } from "./views/coating-viewer.js";
+import { groups, details, mangaGroups, mangaChapters, mangaDetails, emojis, emojiPacks, storySprites, equips, equipRes, equipSuits, awarenessSettings, fashions, characters, weaponFashions } from "./main.js";
 import { t } from "./locale.js";
 
 const routes = {
@@ -118,7 +119,14 @@ const routes = {
         if (memory) {
             showMemoryDetails(memory, equips, equipRes, awarenessSettings);
         }
-    }
+    },
+    "/coating/construct/:page?": (page = 1) => {
+        showConstructCoatingGrid(fashions, characters, parseInt(page));
+    },
+    "/coating/weapon/:page?": (page = 1) => {
+        showWeaponCoatingGrid(weaponFashions, parseInt(page));
+    },
+
 };
 
 export const router = () => {

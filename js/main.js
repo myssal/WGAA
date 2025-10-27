@@ -15,6 +15,9 @@ export let equips = []; // Equip
 export let equipRes = []; // EquipRes
 export let equipSuits = []; // EquipSuit
 export let awarenessSettings = []; // AwarenessSetting
+export let fashions = []; // Fashion
+export let characters = []; // Character
+export let weaponFashions = []; // WeaponFashionRes
 
 async function loadConfigs(region) {
   const baseShareUrl = `https://cdn.jsdelivr.net/gh/${DATA_REPO}@${BRANCH}/${region}/bytes/share`;
@@ -73,8 +76,19 @@ async function loadConfigs(region) {
     equipRes = await equipResData.json();
     awarenessSettings = await awarenessSettingRes.json();
 
+    // Fetch Coating
+    const [fashionRes, characterRes, weaponFashionRes] = await Promise.all([
+      fetch(`${baseShareUrl}/fashion/Fashion.json`),
+      fetch(`${baseShareUrl}/character/Character.json`),
+      fetch(`${baseClientUrl}/weaponfashion/WeaponFashionRes.json`)
+    ]);
+    if (!fashionRes.ok || !characterRes.ok || !weaponFashionRes.ok) throw new Error("Failed to fetch Coating config files");
+    fashions = await fashionRes.json();
+    characters = await characterRes.json();
+    weaponFashions = await weaponFashionRes.json();
+
     // Render sidebar
-    renderSidebar(groups, details, mangaGroups, mangaChapters, mangaDetails, emojis, emojiPacks, storySprites, equips, equipRes, equipSuits, awarenessSettings);
+    renderSidebar(groups, details, mangaGroups, mangaChapters, mangaDetails, emojis, emojiPacks, storySprites, equips, equipRes, equipSuits, awarenessSettings, fashions, characters, weaponFashions);
     router();
   } catch (err) {
     console.error("Failed to load config:", err);
