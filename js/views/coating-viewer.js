@@ -50,7 +50,7 @@ export function showConstructCoatingGrid(fashions, characters, page = 1) {
       const wrapper = document.createElement("div");
       wrapper.className = "flex flex-col items-center cursor-pointer";
       wrapper.onclick = () => {
-        location.hash = `#/coating/construct/${fashion.Id}`;
+        showConstructCoatingDetailsPopup(fashion, fashions, characters, currentPage);
       };
 
       const img = document.createElement("img");
@@ -132,22 +132,47 @@ export function showConstructCoatingGrid(fashions, characters, page = 1) {
   applyFilters();
 }
 
-export function showConstructCoatingDetails(fashion) {
-  const main = document.getElementById("mainContent");
-  main.innerHTML = "";
+export function showConstructCoatingDetailsPopup(fashion, allFashions, characters, page = 1) {
+  const modalId = "coating-details-modal";
+  let modal = document.getElementById(modalId);
+  if (modal) modal.remove();
+
+  function closeModal(currentPage) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.remove();
+    }
+    const targetHash = `#/coating/construct`;
+    const targetHashWithPage = currentPage && currentPage > 1 ? `${targetHash}/${currentPage}` : targetHash;
+
+    if (location.hash !== targetHashWithPage) {
+      location.hash = targetHashWithPage;
+    }
+  }
 
   const imgUrl = getAssetUrl(fashion.CharacterIcon);
   const rarity = '★'.repeat(fashion.Quality);
 
-  main.innerHTML = `
-    <div class="max-w-4xl mx-auto p-4 bg-gray-800 rounded-lg shadow-xl">
-      <div class="flex justify-between items-center mb-4">
-        <button id="backToGrid" class="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm">${t("backButton")}</button>
-        <span class="text-gray-400">coating/construct/${fashion.Name}</span>
+  const index = allFashions.findIndex(item => item.Id === fashion.Id);
+  const prev = allFashions[index - 1];
+  const next = allFashions[index + 1];
+
+  modal = document.createElement("div");
+  modal.id = modalId;
+  modal.className = "fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50";
+  modal.innerHTML = `
+    <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-4xl relative">
+      <button id="close-coating-modal" class="absolute top-2 right-2 text-gray-400 hover:text-white">&times;</button>
+      <div class="flex justify-center items-center mb-4">
+        <span class="text-gray-200 font-bold">${t("constructCoating")} (${index + 1} / ${allFashions.length})</span>
       </div>
+      <button id="prevBtn" ${!prev ? "disabled" : ""} 
+              class="absolute left-0 top-1/2 -translate-y-1/2 text-3xl text-gray-300 hover:text-white disabled:opacity-30 z-10">
+        &#10094;
+      </button>
 
       <div class="flex mb-6">
-        <img src="${imgUrl}" alt="${fashion.Name}" class="w-32 h-32 object-contain mr-8">
+        <img src="${imgUrl}" alt="${fashion.Name}" class="w-48 h-48 object-contain mr-8">
         <div class="flex-1 text-left space-y-2">
           <h2 class="text-3xl font-bold text-gray-100">${fashion.Name} (${rarity})</h2>
           <p class="text-lg text-gray-300 italic">"${fashion.Description.replace(/\n/g, '<br>')}"</p>
@@ -155,13 +180,52 @@ export function showConstructCoatingDetails(fashion) {
           <p class="text-sm text-gray-400 preserve-whitespace">${fashion.WorldDescription}</p>
         </div>
       </div>
+
+      <button id="nextBtn" ${!next ? "disabled" : ""}
+              class="absolute right-0 top-1/2 -translate-y-1/2 text-3xl text-gray-300 hover:text-white disabled:opacity-30 z-10">
+        &#10095;
+      </button>
+
       <p class="text-xs text-gray-500 mt-4 text-right">ID: ${fashion.Id}</p>
     </div>
   `;
 
-  document.getElementById("backToGrid").onclick = () => {
-    history.back();
+  document.body.appendChild(modal);
+
+  document.getElementById("close-coating-modal").onclick = () => closeModal(page);
+  modal.onclick = (e) => {
+    if (e.target === modal) {
+      closeModal(page);
+    }
   };
+
+  const pageSize = 16; // Consistent with showConstructCoatingGrid
+
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+
+  prevBtn.disabled = !prev;
+  nextBtn.disabled = !next;
+
+  prevBtn.onclick = null;
+  nextBtn.onclick = null;
+
+  if (prev) {
+    prevBtn.onclick = () => {
+      const prevIndex = allFashions.findIndex(item => item.Id === prev.Id);
+      const prevPage = Math.ceil((prevIndex + 1) / pageSize);
+      showConstructCoatingDetailsPopup(prev, allFashions, characters, prevPage);
+      showConstructCoatingGrid(allFashions, characters, prevPage);
+    };
+  }
+  if (next) {
+    nextBtn.onclick = () => {
+      const nextIndex = allFashions.findIndex(item => item.Id === next.Id);
+      const nextPage = Math.ceil((nextIndex + 1) / pageSize);
+      showConstructCoatingDetailsPopup(next, allFashions, characters, nextPage);
+      showConstructCoatingGrid(allFashions, characters, nextPage);
+    };
+  }
 }
 
 export function showWeaponCoatingGrid(weaponFashions, page = 1) {
@@ -189,7 +253,7 @@ export function showWeaponCoatingGrid(weaponFashions, page = 1) {
       const wrapper = document.createElement("div");
       wrapper.className = "flex flex-col items-center cursor-pointer";
       wrapper.onclick = () => {
-        location.hash = `# /coating/weapon/${fashion.Id}`;
+        showWeaponCoatingDetailsPopup(fashion, weaponFashions, currentPage);
       };
 
       const img = document.createElement("img");
@@ -257,22 +321,47 @@ export function showWeaponCoatingGrid(weaponFashions, page = 1) {
   renderGrid(weaponFashions, page);
 }
 
-export function showWeaponCoatingDetails(weaponFashion) {
-    const main = document.getElementById("mainContent");
-    main.innerHTML = "";
+export function showWeaponCoatingDetailsPopup(weaponFashion, allWeaponFashions, page = 1) {
+    const modalId = "weapon-coating-details-modal";
+    let modal = document.getElementById(modalId);
+    if (modal) modal.remove();
+
+    function closeModal(currentPage) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.remove();
+        }
+        const targetHash = `#/coating/weapon`;
+        const targetHashWithPage = currentPage && currentPage > 1 ? `${targetHash}/${currentPage}` : targetHash;
+
+        if (location.hash !== targetHashWithPage) {
+            location.hash = targetHashWithPage;
+        }
+    }
 
     const imgUrl = getAssetUrl(weaponFashion.ShopIcon);
     const rarity = '★'.repeat(weaponFashion.Quality);
 
-    main.innerHTML = `
-    <div class="max-w-4xl mx-auto p-4 bg-gray-800 rounded-lg shadow-xl">
-        <div class="flex justify-between items-center mb-4">
-        <button id="backToGrid" class="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm">${t("backButton")}</button>
-        <span class="text-gray-400">coating/weapon/${weaponFashion.Name}</span>
-        </div>
+    const index = allWeaponFashions.findIndex(item => item.Id === weaponFashion.Id);
+    const prev = allWeaponFashions[index - 1];
+    const next = allWeaponFashions[index + 1];
 
-        <div class="flex mb-6">
-        <img src="${imgUrl}" alt="${weaponFashion.Name}" class="w-32 h-32 object-contain mr-8">
+    modal = document.createElement("div");
+    modal.id = modalId;
+    modal.className = "fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50";
+    modal.innerHTML = `
+    <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-4xl relative">
+      <button id="close-weapon-coating-modal" class="absolute top-2 right-2 text-gray-400 hover:text-white">&times;</button>
+      <div class="flex justify-center items-center mb-4">
+        <span class="text-gray-200 font-bold">${t("weaponCoating")} (${index + 1} / ${allWeaponFashions.length})</span>
+      </div>
+      <button id="prevBtn" ${!prev ? "disabled" : ""} 
+              class="absolute left-0 top-1/2 -translate-y-1/2 text-3xl text-gray-300 hover:text-white disabled:opacity-30 z-10">
+        &#10094;
+      </button>
+
+      <div class="flex mb-6">
+        <img src="${imgUrl}" alt="${weaponFashion.Name}" class="w-48 h-48 object-contain mr-8">
         <div class="flex-1 text-left space-y-2">
             <h2 class="text-3xl font-bold text-gray-100">${weaponFashion.Name} (${rarity})</h2>
             <p class="text-lg text-gray-300 italic">"${weaponFashion.Description.replace(/\n/g, '<br>')}"</p>
@@ -280,11 +369,50 @@ export function showWeaponCoatingDetails(weaponFashion) {
             <p class="text-sm text-gray-400 preserve-whitespace">${weaponFashion.WorldDescription}</p>
         </div>
         </div>
-        <p class="text-xs text-gray-500 mt-4 text-right">ID: ${weaponFashion.Id}</p>
+
+      <button id="nextBtn" ${!next ? "disabled" : ""}
+              class="absolute right-0 top-1/2 -translate-y-1/2 text-3xl text-gray-300 hover:text-white disabled:opacity-30 z-10">
+        &#10095;
+      </button>
+
+      <p class="text-xs text-gray-500 mt-4 text-right">ID: ${weaponFashion.Id}</p>
     </div>
     `;
 
-    document.getElementById("backToGrid").onclick = () => {
-        history.back();
+    document.body.appendChild(modal);
+
+    document.getElementById("close-weapon-coating-modal").onclick = () => closeModal(page);
+    modal.onclick = (e) => {
+        if (e.target === modal) {
+            closeModal(page);
+        }
     };
+
+    const pageSize = 16; // Consistent with showWeaponCoatingGrid
+
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+
+    prevBtn.disabled = !prev;
+    nextBtn.disabled = !next;
+
+    prevBtn.onclick = null;
+    nextBtn.onclick = null;
+
+    if (prev) {
+        prevBtn.onclick = () => {
+            const prevIndex = allWeaponFashions.findIndex(item => item.Id === prev.Id);
+            const prevPage = Math.ceil((prevIndex + 1) / pageSize);
+            showWeaponCoatingDetailsPopup(prev, allWeaponFashions, prevPage);
+            showWeaponCoatingGrid(allWeaponFashions, prevPage);
+        };
+    }
+    if (next) {
+        nextBtn.onclick = () => {
+            const nextIndex = allWeaponFashions.findIndex(item => item.Id === next.Id);
+            const nextPage = Math.ceil((nextIndex + 1) / pageSize);
+            showWeaponCoatingDetailsPopup(next, allWeaponFashions, nextPage);
+            showWeaponCoatingGrid(allWeaponFashions, nextPage);
+        };
+    }
 }

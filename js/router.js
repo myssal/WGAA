@@ -4,7 +4,7 @@ import { showEmojiGrid, showEmojiDetails } from "./views/emoji-viewer.js";
 import { showChapterGrid } from "./views/manga-viewer.js";
 import { showMemoryGrid, showMemoryDetails } from "./views/memory-viewer.js";
 import { showStorySpriteGrid, showStorySpriteDetails } from "./views/story-sprite-viewer.js";
-import { showConstructCoatingGrid, showWeaponCoatingGrid, showConstructCoatingDetails, showWeaponCoatingDetails } from "./views/coating-viewer.js";
+import { showConstructCoatingGrid, showWeaponCoatingGrid } from "./views/coating-viewer.js";
 import { groups, details, mangaGroups, mangaChapters, mangaDetails, emojis, emojiPacks, storySprites, equips, equipRes, equipSuits, awarenessSettings, fashions, characters, weaponFashions } from "./main.js";
 import { t } from "./locale.js";
 
@@ -123,21 +123,10 @@ const routes = {
     "/coating/construct": () => {
         showConstructCoatingGrid(fashions, characters);
     },
-    "/coating/construct/:coatingId": (coatingId) => {
-        const fashion = fashions.find(f => f.Id === parseInt(coatingId));
-        if (fashion) {
-            showConstructCoatingDetails(fashion);
-        }
-    },
     "/coating/weapon": () => {
         showWeaponCoatingGrid(weaponFashions);
     },
-    "/coating/weapon/:coatingId": (coatingId) => {
-        const weaponFashion = weaponFashions.find(f => f.Id === parseInt(coatingId));
-        if (weaponFashion) {
-            showWeaponCoatingDetails(weaponFashion);
-        }
-    }
+
 };
 
 export const router = () => {
