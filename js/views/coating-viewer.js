@@ -25,7 +25,7 @@ export function showConstructCoatingGrid(fashions, characters, page = 1) {
   allOption.textContent = t("all");
   filterSelect.appendChild(allOption);
 
-  const characterNames = [...new Set(characters.map(c => c.Name))].sort();
+  const characterNames = [...new Set(characters.map(c => c.LogName))].sort();
   characterNames.forEach(name => {
     let option = document.createElement("option");
     option.value = name;
@@ -118,11 +118,14 @@ export function showConstructCoatingGrid(fashions, characters, page = 1) {
 
   const applyFiltersAndRender = (currentPage) => {
     const selectedCharacter = filterSelect.value;
+
     let fashionsToRender = filteredFashions;
+
     if (selectedCharacter) {
-        const character = characters.find(c => c.Name === selectedCharacter);
-        if (character) {
-            fashionsToRender = filteredFashions.filter(f => f.CharacterId === character.Id);
+        const characterIds = characters.filter(c => c.LogName === selectedCharacter).map(c => c.Id);
+
+        if (characterIds.length > 0) {
+            fashionsToRender = filteredFashions.filter(f => characterIds.map(id => Number(id)).includes(Number(f.CharacterId)));
         }
     }
     renderGrid(fashionsToRender, currentPage);
