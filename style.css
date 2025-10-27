@@ -61,3 +61,7 @@ body {
   max-height: 100%;
   object-fit: contain;
 }
+
+.preserve-whitespace {
+  white-space: pre-wrap;
+}

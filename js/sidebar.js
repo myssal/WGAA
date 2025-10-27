@@ -1,7 +1,7 @@
 import { t } from "./locale.js";
 
 /** Render Sidebar */
-export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, mangaDetails, emojis, emojiPacks, storySprites) {
+export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, mangaDetails, emojis, emojiPacks, storySprites, equips, equipRes, equipSuits, awarenessSettings) {
   const container = document.getElementById("categoryList");
   if (!container) {
     console.error("Sidebar container #categoryList not found.");
@@ -19,6 +19,10 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
   emojis = Array.isArray(emojis) ? emojis : [];
   emojiPacks = Array.isArray(emojiPacks) ? emojiPacks : [];
   storySprites = Array.isArray(storySprites) ? storySprites : [];
+  equips = Array.isArray(equips) ? equips : [];
+  equipRes = Array.isArray(equipRes) ? equipRes : [];
+  equipSuits = Array.isArray(equipSuits) ? equipSuits : [];
+  awarenessSettings = Array.isArray(awarenessSettings) ? awarenessSettings : [];
 
   const createCollapsible = (title) => {
     const div = document.createElement("div");
@@ -120,4 +124,18 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
 
   storySpriteButtonDiv.appendChild(storySpriteButton);
   container.appendChild(storySpriteButtonDiv);
+
+  /** Memory Section */
+  const memoryButtonDiv = document.createElement("div");
+  memoryButtonDiv.className = "group-item border-b border-gray-700 pb-2";
+
+  const memoryButton = document.createElement("button");
+  memoryButton.className = "w-full text-left flex justify-between items-center px-2 py-2 bg-gray-800 rounded hover:bg-gray-700 transition";
+  memoryButton.innerHTML = `<span class="font-semibold">${t("memorySection")}</span>`;
+  memoryButton.addEventListener("click", () => {
+    location.hash = "#/memory";
+  });
+
+  memoryButtonDiv.appendChild(memoryButton);
+  container.appendChild(memoryButtonDiv);
 }

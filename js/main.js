@@ -11,6 +11,10 @@ export let mangaDetails = [];  // ArchiveComicDetail
 export let emojis = []; // Emoji
 export let emojiPacks = []; // EmojiPack
 export let storySprites = []; // MovieActor
+export let equips = []; // Equip
+export let equipRes = []; // EquipRes
+export let equipSuits = []; // EquipSuit
+export let awarenessSettings = []; // AwarenessSetting
 
 async function loadConfigs(region) {
   const baseShareUrl = `https://cdn.jsdelivr.net/gh/${DATA_REPO}@${BRANCH}/${region}/bytes/share`;
@@ -56,8 +60,21 @@ async function loadConfigs(region) {
     if (!storySpriteRes.ok) throw new Error("Failed to fetch Story Sprite config file");
     storySprites = await storySpriteRes.json();
 
+    // Fetch Memory
+    const [equipResRes, equipSuitRes, equipResData, awarenessSettingRes] = await Promise.all([
+      fetch(`${baseShareUrl}/equip/Equip.json`),
+      fetch(`${baseShareUrl}/equip/EquipSuit.json`),
+      fetch(`${baseClientUrl}/equip/EquipRes.json`),
+      fetch(`${baseShareUrl}/archive/AwarenessSetting.json`)
+    ]);
+    if (!equipResRes.ok || !equipSuitRes.ok || !equipResData.ok || !awarenessSettingRes.ok) throw new Error("Failed to fetch Memory config files");
+    equips = await equipResRes.json();
+    equipSuits = await equipSuitRes.json();
+    equipRes = await equipResData.json();
+    awarenessSettings = await awarenessSettingRes.json();
+
     // Render sidebar
-    renderSidebar(groups, details, mangaGroups, mangaChapters, mangaDetails, emojis, emojiPacks, storySprites);
+    renderSidebar(groups, details, mangaGroups, mangaChapters, mangaDetails, emojis, emojiPacks, storySprites, equips, equipRes, equipSuits, awarenessSettings);
     router();
   } catch (err) {
     console.error("Failed to load config:", err);
