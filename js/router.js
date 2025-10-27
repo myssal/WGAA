@@ -1,6 +1,6 @@
 
-import { showThumbnailGrid, showEmojiGrid, showStorySpriteGrid, showCG, showChapterGrid, showEmojiDetails, showStorySpriteDetails } from "./viewer.js";
-import { groups, details, mangaGroups, mangaChapters, mangaDetails, emojis, emojiPacks, storySprites } from "./main.js";
+import { showThumbnailGrid, showEmojiGrid, showStorySpriteGrid, showCG, showChapterGrid, showEmojiDetails, showStorySpriteDetails, showMemoryGrid, showMemoryDetails } from "./viewer.js";
+import { groups, details, mangaGroups, mangaChapters, mangaDetails, emojis, emojiPacks, storySprites, equips, equipRes, equipSuits, awarenessSettings } from "./main.js";
 import { t } from "./locale.js";
 
 const routes = {
@@ -104,6 +104,15 @@ const routes = {
             const page = Math.ceil((index + 1) / pageSize);
             showStorySpriteGrid(storySprites, page);
             showStorySpriteDetails(sprite, storySprites, page, index);
+        }
+    },
+    "/memory": () => {
+        showMemoryGrid(equipSuits, equips, equipRes);
+    },
+    "/memory/:memoryName": (memoryName) => {
+        const memory = equipSuits.find(m => m.Name === memoryName);
+        if (memory) {
+            showMemoryDetails(memory, equips, equipRes, awarenessSettings);
         }
     }
 };

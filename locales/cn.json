@@ -10,5 +10,16 @@
   "prevButton": "上一頁",
   "nextButton": "下一頁",
   "page": "頁",
-  "goToPage": "跳轉到頁面"
+  "goToPage": "跳轉到頁面",
+  "memorySection": "意識",
+  "all": "全部",
+  "search": "搜索...",
+  "rarity": "稀有度",
+  "tag": "標籤",
+  "artist": "畫師",
+  "setEffect": "套裝效果",
+  "set2Effect": "2件套效果",
+  "set4Effect": "4件套效果",
+  "illustration": "立繪",
+  "backstory": "背景故事"
 }

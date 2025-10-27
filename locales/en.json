@@ -10,5 +10,16 @@
   "prevButton": "Prev",
   "nextButton": "Next",
   "page": "Page",
-  "goToPage": "Go to page"
+  "goToPage": "Go to page",
+  "memorySection": "Memory",
+  "all": "All",
+  "search": "Search...",
+  "rarity": "Rarity",
+  "tag": "Tag",
+  "artist": "Artist",
+  "setEffect": "Set Effect",
+  "set2Effect": "2-Set Effect",
+  "set4Effect": "4-Set Effect",
+  "illustration": "Illustration",
+  "backstory": "Backstory"
 }
