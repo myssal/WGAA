@@ -10,8 +10,5 @@
   "prevButton": "上一頁",
   "nextButton": "下一頁",
   "page": "頁",
-  "goToPage": "跳轉到頁面",
-  "memorySection": "記憶",
-  "searchByName": "按名稱搜索",
-  "allMemories": "所有記憶"
+  "goToPage": "跳轉到頁面"
 }
