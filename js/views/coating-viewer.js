@@ -136,6 +136,7 @@ export function showConstructCoatingGrid(fashions, characters, page = 1) {
 }
 
 export function showConstructCoatingDetailsPopup(fashion, allFashions, characters, page = 1) {
+  console.log("showConstructCoatingDetailsPopup: Received page", page);
   const modalId = "coating-details-modal";
   let modal = document.getElementById(modalId);
   if (modal) modal.remove();
@@ -212,18 +213,12 @@ export function showConstructCoatingDetailsPopup(fashion, allFashions, character
 
   if (prev) {
     prevBtn.onclick = () => {
-      const prevIndex = allFashions.findIndex(item => item.Id === prev.Id);
-      const prevPage = Math.ceil((prevIndex + 1) / pageSize);
-      showConstructCoatingDetailsPopup(prev, allFashions, characters, prevPage);
-      showConstructCoatingGrid(allFashions, characters, prevPage);
+      location.hash = `#/coating/construct/${prev.Id}`;
     };
   }
   if (next) {
     nextBtn.onclick = () => {
-      const nextIndex = allFashions.findIndex(item => item.Id === next.Id);
-      const nextPage = Math.ceil((nextIndex + 1) / pageSize);
-      showConstructCoatingDetailsPopup(next, allFashions, characters, nextPage);
-      showConstructCoatingGrid(allFashions, characters, nextPage);
+      location.hash = `#/coating/construct/${next.Id}`;
     };
   }
 
@@ -324,6 +319,7 @@ export function showWeaponCoatingGrid(weaponFashions, page = 1) {
 }
 
 export function showWeaponCoatingDetailsPopup(weaponFashion, allWeaponFashions, page = 1) {
+    console.log("showWeaponCoatingDetailsPopup: Received page", page);
     const modalId = "weapon-coating-details-modal";
     let modal = document.getElementById(modalId);
     if (modal) modal.remove();
@@ -400,18 +396,12 @@ export function showWeaponCoatingDetailsPopup(weaponFashion, allWeaponFashions, 
 
     if (prev) {
         prevBtn.onclick = () => {
-            const prevIndex = allWeaponFashions.findIndex(item => item.Id === prev.Id);
-            const prevPage = Math.ceil((prevIndex + 1) / pageSize);
-            showWeaponCoatingDetailsPopup(prev, allWeaponFashions, prevPage);
-            showWeaponCoatingGrid(allWeaponFashions, prevPage);
+            location.hash = `#/coating/weapon/${prev.Id}`;
         };
     }
     if (next) {
         nextBtn.onclick = () => {
-            const nextIndex = allWeaponFashions.findIndex(item => item.Id === next.Id);
-            const nextPage = Math.ceil((nextIndex + 1) / pageSize);
-            showWeaponCoatingDetailsPopup(next, allWeaponFashions, nextPage);
-            showWeaponCoatingGrid(allWeaponFashions, nextPage);
+            location.hash = `#/coating/weapon/${next.Id}`;
         };
     }
 

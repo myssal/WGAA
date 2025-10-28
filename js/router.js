@@ -4,7 +4,7 @@ import { showEmojiGrid, showEmojiDetails } from "./views/emoji-viewer.js";
 import { showChapterGrid } from "./views/manga-viewer.js";
 import { showMemoryGrid, showMemoryDetails } from "./views/memory-viewer.js";
 import { showStorySpriteGrid, showStorySpriteDetails } from "./views/story-sprite-viewer.js";
-import { showConstructCoatingGrid, showWeaponCoatingGrid } from "./views/coating-viewer.js";
+import { showConstructCoatingGrid, showWeaponCoatingGrid, showConstructCoatingDetailsPopup, showWeaponCoatingDetailsPopup } from "./views/coating-viewer.js";
 import { groups, details, mangaGroups, mangaChapters, mangaDetails, emojis, emojiPacks, storySprites, equips, equipRes, equipSuits, awarenessSettings, fashions, characters, weaponFashions } from "./main.js";
 import { t } from "./locale.js";
 
@@ -123,17 +123,23 @@ const routes = {
     "/coating/construct/:id": (id) => {
         const fashion = fashions.find(f => f.Id === parseInt(id));
         if (fashion) {
-            // Render the grid first, then open the modal
-            showConstructCoatingGrid(fashions, characters, 1); // Assuming page 1 for initial grid render
-            showConstructCoatingDetailsPopup(fashion, fashions, characters, 1); // Assuming page 1 for modal context
+            const pageSize = 15; // Consistent with showConstructCoatingGrid
+            const index = fashions.findIndex(item => item.Id === fashion.Id);
+            const page = Math.ceil((index + 1) / pageSize);
+            console.log("Router: Construct coating ID", id, "calculated page", page);
+            showConstructCoatingGrid(fashions, characters, page);
+            showConstructCoatingDetailsPopup(fashion, fashions, characters, page);
         }
     },
     "/coating/weapon/:id": (id) => {
         const weaponFashion = weaponFashions.find(f => f.Id === parseInt(id));
         if (weaponFashion) {
-            // Render the grid first, then open the modal
-            showWeaponCoatingGrid(weaponFashions, 1); // Assuming page 1 for initial grid render
-            showWeaponCoatingDetailsPopup(weaponFashion, weaponFashions, 1); // Assuming page 1 for modal context
+            const pageSize = 15; // Consistent with showWeaponCoatingGrid
+            const index = weaponFashions.findIndex(item => item.Id === weaponFashion.Id);
+            const page = Math.ceil((index + 1) / pageSize);
+            console.log("Router: Weapon coating ID", id, "calculated page", page);
+            showWeaponCoatingGrid(weaponFashions, page);
+            showWeaponCoatingDetailsPopup(weaponFashion, weaponFashions, page);
         }
     },
     "/coating/construct/:page?": (page = 1) => {
@@ -147,6 +153,7 @@ const routes = {
 
 export const router = () => {
     const path = location.hash.slice(1) || "/";
+    console.log("Router: Processing path", path);
     const pathParts = path.split("/").slice(1);
 
     let currentRoute = null;
@@ -185,6 +192,7 @@ export const router = () => {
             if (match) {
                 currentRoute = routes[route];
                 params = tempParams;
+                console.log("Router: Matched route", route, "with params", params);
                 break;
             }
         }
