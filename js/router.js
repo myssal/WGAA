@@ -121,25 +121,25 @@ const routes = {
         }
     },
     "/coating/construct/:id": (id) => {
-        const fashion = fashions.find(f => f.Id === parseInt(id));
+        const filteredFashions = fashions.filter(f => f.Description && !f.Description.includes("Default"));
+        const fashion = filteredFashions.find(f => f.Id === parseInt(id));
         if (fashion) {
             const pageSize = 15; // Consistent with showConstructCoatingGrid
-            const index = fashions.findIndex(item => item.Id === fashion.Id);
+            const index = filteredFashions.findIndex(item => item.Id === fashion.Id);
             const page = Math.ceil((index + 1) / pageSize);
-            console.log("Router: Construct coating ID", id, "calculated page", page);
             showConstructCoatingGrid(fashions, characters, page);
-            showConstructCoatingDetailsPopup(fashion, fashions, characters, page);
+            showConstructCoatingDetailsPopup(fashion, filteredFashions, characters, page);
         }
     },
     "/coating/weapon/:id": (id) => {
-        const weaponFashion = weaponFashions.find(f => f.Id === parseInt(id));
+        const filteredWeaponFashions = weaponFashions.filter(f => f.Description && !f.Description.includes("Default"));
+        const weaponFashion = filteredWeaponFashions.find(f => f.Id === parseInt(id));
         if (weaponFashion) {
             const pageSize = 15; // Consistent with showWeaponCoatingGrid
-            const index = weaponFashions.findIndex(item => item.Id === weaponFashion.Id);
+            const index = filteredWeaponFashions.findIndex(item => item.Id === weaponFashion.Id);
             const page = Math.ceil((index + 1) / pageSize);
-            console.log("Router: Weapon coating ID", id, "calculated page", page);
             showWeaponCoatingGrid(weaponFashions, page);
-            showWeaponCoatingDetailsPopup(weaponFashion, weaponFashions, page);
+            showWeaponCoatingDetailsPopup(weaponFashion, filteredWeaponFashions, page);
         }
     },
     "/coating/construct/:page?": (page = 1) => {
