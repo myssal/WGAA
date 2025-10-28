@@ -120,6 +120,22 @@ const routes = {
             showMemoryDetails(memory, equips, equipRes, awarenessSettings);
         }
     },
+    "/coating/construct/:id": (id) => {
+        const fashion = fashions.find(f => f.Id === parseInt(id));
+        if (fashion) {
+            // Render the grid first, then open the modal
+            showConstructCoatingGrid(fashions, characters, 1); // Assuming page 1 for initial grid render
+            showConstructCoatingDetailsPopup(fashion, fashions, characters, 1); // Assuming page 1 for modal context
+        }
+    },
+    "/coating/weapon/:id": (id) => {
+        const weaponFashion = weaponFashions.find(f => f.Id === parseInt(id));
+        if (weaponFashion) {
+            // Render the grid first, then open the modal
+            showWeaponCoatingGrid(weaponFashions, 1); // Assuming page 1 for initial grid render
+            showWeaponCoatingDetailsPopup(weaponFashion, weaponFashions, 1); // Assuming page 1 for modal context
+        }
+    },
     "/coating/construct/:page?": (page = 1) => {
         showConstructCoatingGrid(fashions, characters, parseInt(page));
     },

@@ -145,13 +145,9 @@ export function showConstructCoatingDetailsPopup(fashion, allFashions, character
     if (modal) {
       modal.remove();
     }
-    showConstructCoatingGrid(allFashions, characters, currentPage);
     const targetHash = `#/coating/construct`;
     const targetHashWithPage = currentPage && currentPage > 1 ? `${targetHash}/${currentPage}` : targetHash;
-
-    if (location.hash !== targetHashWithPage) {
-      location.hash = targetHashWithPage;
-    }
+    location.hash = targetHashWithPage;
   }
 
   const imgUrl = getAssetUrl(fashion.CharacterIcon);
@@ -230,8 +226,10 @@ export function showConstructCoatingDetailsPopup(fashion, allFashions, character
       showConstructCoatingGrid(allFashions, characters, nextPage);
     };
   }
-}
 
+  // Update URL hash when modal is opened
+  location.hash = `#/coating/construct/${fashion.Id}`;
+}
 export function showWeaponCoatingGrid(weaponFashions, page = 1) {
   const main = document.getElementById("mainContent");
   main.innerHTML = "";
@@ -337,10 +335,7 @@ export function showWeaponCoatingDetailsPopup(weaponFashion, allWeaponFashions, 
         }
         const targetHash = `#/coating/weapon`;
         const targetHashWithPage = currentPage && currentPage > 1 ? `${targetHash}/${currentPage}` : targetHash;
-
-        if (location.hash !== targetHashWithPage) {
-            location.hash = targetHashWithPage;
-        }
+        location.hash = targetHashWithPage;
     }
 
     const imgUrl = getAssetUrl(weaponFashion.ShopIcon);
@@ -355,7 +350,7 @@ export function showWeaponCoatingDetailsPopup(weaponFashion, allWeaponFashions, 
     modal.className = "fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50";
     modal.innerHTML = `
     <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-3xl relative">
-      <button id="close-weapon-coating-modal" class="absolute top-2 right-2 text-gray-400 hover:text-white">&times;</button>
+      <button id="close-weapon-coating-modal" class="absolute top-2 right-2 text-gray-400 hover:text-white text-3xl">&times;</button>
       <div class="flex justify-center items-center mb-4">
         <span class="text-gray-200 font-bold">${t("weaponCoating")} (${index + 1} / ${allWeaponFashions.length})</span>
       </div>
@@ -419,4 +414,7 @@ export function showWeaponCoatingDetailsPopup(weaponFashion, allWeaponFashions, 
             showWeaponCoatingGrid(allWeaponFashions, nextPage);
         };
     }
+
+    // Update URL hash when modal is opened
+    location.hash = `#/coating/weapon/${weaponFashion.Id}`;
 }
