@@ -145,6 +145,7 @@ export function showConstructCoatingDetailsPopup(fashion, allFashions, character
     if (modal) {
       modal.remove();
     }
+    showConstructCoatingGrid(allFashions, characters, currentPage);
     const targetHash = `#/coating/construct`;
     const targetHashWithPage = currentPage && currentPage > 1 ? `${targetHash}/${currentPage}` : targetHash;
 
@@ -165,6 +166,7 @@ export function showConstructCoatingDetailsPopup(fashion, allFashions, character
   modal.className = "fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50";
   modal.innerHTML = `
     <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-3xl relative">
+      <button id="close-coating-modal" class="absolute top-2 right-2 text-gray-400 hover:text-white text-3xl">&times;</button>
       <div class="flex justify-center items-center mb-4">
         <span class="text-gray-200 font-bold">${t("constructCoating")} (${index + 1} / ${allFashions.length})</span>
       </div>
