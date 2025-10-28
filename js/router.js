@@ -117,7 +117,11 @@ const routes = {
     "/memory/:memoryId": (memoryId) => {
         const memory = equipSuits.find(m => m.Id === parseInt(memoryId));
         if (memory) {
-            showMemoryDetails(memory, equips, equipRes, awarenessSettings);
+            const pageSize = 18; // Consistent with showMemoryGrid
+            const index = equipSuits.findIndex(item => item.Id === memory.Id);
+            const page = Math.ceil((index + 1) / pageSize);
+            showMemoryGrid(equipSuits, equips, equipRes, page);
+            showMemoryDetails(memory, equips, equipRes, awarenessSettings, page);
         }
     },
     "/coating/construct/:id": (id) => {

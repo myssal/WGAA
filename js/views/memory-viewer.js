@@ -146,30 +146,23 @@ export function showMemoryGrid(equipSuits, equips, equipRes, page = 1) {
   applyFilters(); // Initial render
 }
 
-export function showMemoryDetails(memorySuit, equips, equipRes, awarenessSettings) {
-  const main = document.getElementById("mainContent");
-  main.innerHTML = "";
+export function showMemoryDetails(memorySuit, equips, equipRes, awarenessSettings, page = 1) {
+  const modalId = "memory-details-modal";
+  let modal = document.getElementById(modalId);
+  if (modal) modal.remove();
+
+  function closeModal(currentPage) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.remove();
+    }
+    const targetHash = `#/memory`;
+    const targetHashWithPage = currentPage && currentPage > 1 ? `${targetHash}/${currentPage}` : targetHash;
+    location.hash = targetHashWithPage;
+  }
 
   const memoryId = memorySuit.Id;
   const memoryName = memorySuit.Name;
-
-  // Modal (only create once)
-  let imageModal = document.getElementById("imageModal");
-  if (!imageModal) {
-    imageModal = document.createElement("div");
-    imageModal.id = "imageModal";
-    imageModal.className = "fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center hidden z-50";
-    imageModal.innerHTML = `<img id="modalImage" src="" class="max-w-[90%] max-h-[90%] rounded shadow-lg">`;
-    document.body.appendChild(imageModal);
-
-    // Add event listener to close modal when clicking outside the image
-    imageModal.addEventListener("click", e => {
-      if (e.target === imageModal) {
-        imageModal.classList.add("hidden");
-        document.getElementById("modalImage").src = "";
-      }
-    });
-  }
 
   // Find associated Equip and EquipRes data
   const equipId = memorySuit.EquipIds && memorySuit.EquipIds.length > 0 ? memorySuit.EquipIds[0] : null;
@@ -189,11 +182,13 @@ export function showMemoryDetails(memorySuit, equips, equipRes, awarenessSetting
   const liHuiUrl2 = liHuiPath2 ? getAssetUrl(liHuiPath2, { type: 'memory' }) : 'https://via.placeholder.com/100x150?text=N/A';
   const liHuiUrl3 = liHuiPath3 ? getAssetUrl(liHuiPath3, { type: 'memory' }) : 'https://via.placeholder.com/100x150?text=N/A';
 
-
-  main.innerHTML = `
-    <div class="max-w-4xl mx-auto p-4 bg-gray-800 rounded-lg shadow-xl">
+  modal = document.createElement("div");
+  modal.id = modalId;
+  modal.className = "fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50";
+  modal.innerHTML = `
+    <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-4xl relative max-h-[90%] overflow-y-auto">
+      <button id="close-memory-modal" class="absolute top-2 right-2 text-gray-400 hover:text-white text-3xl">&times;</button>
       <div class="flex justify-between items-center mb-4">
-        <button id="backToMemoryGrid" class="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm">${t("backButton")}</button>
         <span class="text-gray-400">memory/${memoryName}</span>
       </div>
 
@@ -235,7 +230,32 @@ export function showMemoryDetails(memorySuit, equips, equipRes, awarenessSetting
     </div>
   `;
 
-  document.getElementById("backToMemoryGrid").onclick = () => {
-    location.hash = "#/memory";
+  document.body.appendChild(modal);
+
+  document.getElementById("close-memory-modal").onclick = () => closeModal(page);
+  modal.onclick = (e) => {
+    if (e.target === modal) {
+      closeModal(page);
+    }
   };
+
+  // Update URL hash when modal is opened
+  location.hash = `#/memory/${memorySuit.Id}`;
+
+  // Handle image modal (existing logic)
+  let imageModal = document.getElementById("imageModal");
+  if (!imageModal) {
+    imageModal = document.createElement("div");
+    imageModal.id = "imageModal";
+    imageModal.className = "fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center hidden z-[60]";
+    imageModal.innerHTML = `<img id="modalImage" src="" class="max-w-[90%] max-h-[90%] rounded shadow-lg">`;
+    document.body.appendChild(imageModal);
+
+    imageModal.addEventListener("click", e => {
+      if (e.target === imageModal) {
+        imageModal.classList.add("hidden");
+        document.getElementById("modalImage").src = "";
+      }
+    });
+  }
 }
