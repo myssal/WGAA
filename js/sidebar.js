@@ -27,6 +27,8 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
   characters = Array.isArray(characters) ? characters : [];
   weaponFashions = Array.isArray(weaponFashions) ? weaponFashions : [];
 
+  const collapsibles = [];
+
   const createCollapsible = (title) => {
     const div = document.createElement("div");
     div.className = "group-item border-b border-gray-700 pb-2";
@@ -50,8 +52,19 @@ export function renderSidebar(cgGroups, cgDetails, mangaGroups, mangaChapters, m
     header.addEventListener("click", () => setExpanded(!expanded));
     div.appendChild(header);
     div.appendChild(content);
+    collapsibles.push(setExpanded);
     return { div, content };
   };
+
+  const toggleAllButton = document.createElement("button");
+  toggleAllButton.className = "w-full text-left flex justify-between items-center px-2 py-2 bg-gray-800 rounded hover:bg-gray-700 transition";
+  toggleAllButton.innerHTML = `<span class="font-bold text-sm">${t("toggleAll")}</span>`;
+  let allExpanded = false;
+  toggleAllButton.addEventListener("click", () => {
+    allExpanded = !allExpanded;
+    collapsibles.forEach(setExpanded => setExpanded(allExpanded));
+  });
+  container.appendChild(toggleAllButton);
 
   /** CG Section */
   const cgSection = createCollapsible(t("cgSection"));

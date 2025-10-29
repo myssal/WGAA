@@ -79,4 +79,15 @@ body {
     padding: 1rem;
 }
 
+#sidebarContainer {
+    width: 20%;
+    min-width: 200px;
+    background-color: #1a202c;
+}
+
+.separator {
+    width: 2px;
+    background-color: #4a5568;
+}
+
 

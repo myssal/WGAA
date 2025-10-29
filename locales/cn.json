@@ -25,5 +25,6 @@
   "coatingSection": "涂装",
   "constructCoating": "构造体",
   "weaponCoating": "武器",
-  "worldDescription": "世界观描述"
+  "worldDescription": "世界观描述",
+  "toggleAll": "全部展開/收起"
 }

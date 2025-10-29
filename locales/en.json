@@ -25,5 +25,6 @@
   "coatingSection": "Coating",
   "constructCoating": "Construct",
   "weaponCoating": "Weapon",
-  "worldDescription": "World Description"
+  "worldDescription": "World Description",
+  "toggleAll": "Collapse/Expand All"
 }
