@@ -105,3 +105,21 @@ document.getElementById("regionSelect").addEventListener("change", e => {
 /** Initialize */
 initializeRouter();
 loadConfigs(currentRegion);
+
+const aboutButton = document.getElementById('aboutButton');
+const closeModalButton = document.getElementById('closeModalButton');
+const aboutModal = document.getElementById('aboutModal');
+
+aboutButton.addEventListener('click', () => {
+    aboutModal.classList.remove('hidden');
+});
+
+closeModalButton.addEventListener('click', () => {
+    aboutModal.classList.add('hidden');
+});
+
+aboutModal.addEventListener('click', (e) => {
+    if (e.target === aboutModal) {
+        aboutModal.classList.add('hidden');
+    }
+});

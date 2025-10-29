@@ -65,3 +65,11 @@ body {
 .preserve-whitespace {
   white-space: pre-wrap;
 }
+
+#aboutModal.hidden {
+  display: none;
+}
+
+#aboutModal {
+  display: flex;
+}
