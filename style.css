@@ -73,3 +73,10 @@ body {
 #aboutModal {
   display: flex;
 }
+
+.version-box {
+    background-color: #1a202c;
+    padding: 1rem;
+}
+
+

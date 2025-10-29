@@ -6,12 +6,10 @@ import { showMemoryGrid, showMemoryDetails } from "./views/memory-viewer.js";
 import { showStorySpriteGrid, showStorySpriteDetails } from "./views/story-sprite-viewer.js";
 import { showConstructCoatingGrid, showWeaponCoatingGrid, showConstructCoatingDetailsPopup, showWeaponCoatingDetailsPopup } from "./views/coating-viewer.js";
 import { groups, details, mangaGroups, mangaChapters, mangaDetails, emojis, emojiPacks, storySprites, equips, equipRes, equipSuits, awarenessSettings, fashions, characters, weaponFashions } from "./main.js";
-import { t } from "./locale.js";
+import { renderHome } from "./views/home.js";
 
 const routes = {
-    "/": () => {
-        document.getElementById("mainContent").innerHTML = `<p class="text-center text-gray-400">${t("welcomeMessage")}</p>`;
-    },
+    "/": renderHome,
     "/cg/:groupName": (groupName) => {
         const group = groups.find(g => g.Name === groupName);
         if (group) {
